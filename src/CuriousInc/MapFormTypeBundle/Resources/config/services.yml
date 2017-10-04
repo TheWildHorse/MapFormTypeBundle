@@ -1,0 +1,4 @@
+services:
+#    curious_inc_map_form_type.example:
+#        class: CuriousInc\MapFormTypeBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
