@@ -35,7 +35,7 @@
         ]
     },
     "autoload-dev": {
-        "psr-4": { "CuriousInc\\MapFormTypeBundle\\Tests": "Tests/" }
+        "psr-4": { "CuriousInc\\MapFormTypeBundle\\Tests\\": "Tests/" }
     },
     "config": {
         "sort-packages": true
