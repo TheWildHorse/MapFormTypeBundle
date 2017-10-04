@@ -29,6 +29,15 @@
     "autoload": {
         "psr-4": {
             "CuriousInc\\MapFormTypeBundle\\": ""
-        }
+        },
+        "exclude-from-classmap": [
+           "Tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": { "CuriousInc\\MapFormTypeBundle\\Tests": "Tests/" }
+    },
+    "config": {
+        "sort-packages": true
     }
 }
