@@ -1,3 +1,12 @@
+## Custom:
+
+.idea
+composer.lock
+phpunit.xml
+vendor/
+
+## Convention:
+
 # Cache and logs (Symfony2)
 /app/cache/*
 /app/logs/*

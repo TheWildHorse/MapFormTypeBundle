@@ -1,0 +1,32 @@
+{
+    "name": "curious-inc/map-form-type-bundle",
+    "type": "symfony-bundle",
+    "description": "Generic Map FormType for Symfony 3",
+    "keywords": ["symfony", "map", "maps", "form", "formtype", "bundle"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "webber",
+            "email": "webber.nl@gmail.com"
+        },
+        {
+            "name": "j63",
+            "email": "jwoudstr@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "symfony/framework-bundle": "^3.0",
+        "symfony/form": "^3.0",
+        "symfony/security-bundle": "^3.0",
+        "twig/twig": "^2.0"
+    },
+    "require-dev": {
+        "symfony/console": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "CuriousInc\\MapFormTypeBundle\\": ""
+        }
+    }
+}
