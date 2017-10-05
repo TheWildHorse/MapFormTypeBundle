@@ -1,0 +1,43 @@
+{% block map_widget %}
+  <div {{ block('widget_container_attributes') }}>
+
+    {# Layout #}
+    {% block map_html %}
+
+      {# Search Field #}
+      <div class="form-group">
+        <div class="col-xs-9 col-sm-8 col-md-7 col-lg-6">
+          <input type="text" id="{{ id }}_search_input" class="form-control"
+                 placeholder="{% trans %}Search for a location{% endtrans %}" />
+        </div>
+        <div class="col-xs-3">
+          <span class="btn btn-default">{% trans %}Search{% endtrans %}</span>
+        </div>
+      </div>
+
+
+      {# Map Placeholder #}
+      <div style="
+      {% if map_dimensions.height is defined %}height: {{ map_dimensions.height }};{% endif %}
+      {% if map_dimensions.width is defined %}width: {{ map_dimensions.width }};{% endif %}
+        display: flex; justify-content: center; align-items: center; border: 1px solid #ccc; margin-bottom: 14px;">
+        <span>
+          Map Placeholder
+        </span>
+      </div>
+
+      {# Fields as defined in FormBuilder #}
+      {% block map_fields %}
+        {% for child in form %}
+          {{ form_row(child) }}
+        {% endfor %}
+      {% endblock %}
+
+    {% endblock %}
+
+    {# Scripts #}
+    {% block map_scripts %}
+    {% endblock %}
+
+  </div>
+{% endblock %}

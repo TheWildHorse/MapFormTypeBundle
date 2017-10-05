@@ -18,11 +18,14 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('curious_inc_map_form_type');
+        $rootNode    = $treeBuilder->root('curious_inc_map_form_type');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        // Bundles configuration parameters
+        $rootNode
+            ->children()
+            ->scalarNode('example')
+            ->end()
+            ->end();
 
         return $treeBuilder;
     }
