@@ -16,8 +16,9 @@
     ],
     "require": {
         "php": "^7.1",
-        "symfony/framework-bundle": "^3.0",
+        "drmonty/leaflet": "^1.2",
         "symfony/form": "^3.0",
+        "symfony/framework-bundle": "^3.0",
         "symfony/security-bundle": "^3.0",
         "twig/twig": "^2.0"
     },
