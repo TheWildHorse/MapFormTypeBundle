@@ -1,7 +1,17 @@
 {% block map_widget %}
   <div {{ block('widget_container_attributes') }}>
 
-    {# Layout #}
+    {# Bundle Styles #}
+    {% block map_css %}
+
+      {# Leaflet styles #}
+      {% block map_leaflet_css %}
+        <link href="{{ asset('css/leaflet.css') }}" rel="stylesheet" />
+      {% endblock %}
+
+    {% endblock %}
+
+    {# Bundle Layout #}
     {% block map_html %}
 
       {# Search Field #}
@@ -17,7 +27,7 @@
 
 
       {# Map Placeholder #}
-      <div style="
+      <div id="{{ id }}_map" style="
       {% if map_dimensions.height is defined %}height: {{ map_dimensions.height }};{% endif %}
       {% if map_dimensions.width is defined %}width: {{ map_dimensions.width }};{% endif %}
         display: flex; justify-content: center; align-items: center; border: 1px solid #ccc; margin-bottom: 14px;">
@@ -37,6 +47,19 @@
 
     {# Scripts #}
     {% block map_scripts %}
+
+      {# Leaflet Scripts #}
+      {% block map_leaflet_scripts %}
+        <script src="{{ asset('js/leaflet.js') }}"></script>
+      {% endblock %}
+
+      {# Init Map #}
+      <script>
+        var mymap = L.map('{{ id }}_map').setView([51.505, -0.09], 13);
+      </script>
+      {# MapType Script #}
+      <script src="{{ asset('js/map-type.js') }}"></script>
+
     {% endblock %}
 
   </div>
