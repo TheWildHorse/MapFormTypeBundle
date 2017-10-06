@@ -16,7 +16,7 @@ composer require curious-inc/map-form-type-bundle
 ```
 
 #### 2) Enable the Bundle
-Register the bundle in `app/AppKernal.php` to enable it:
+Register the bundle in `app/AppKernel.php` to enable it:
 ```php
 // app/AppKernel.php
  
@@ -51,12 +51,4 @@ Add the MapType template to `app/config/config.yml` under twig, like so:
 twig:
     form_themes:
         - CuriousIncMapFormTypeBundle:Form:fields.html.twig
-```
-
-#### 5) Configure the MapType assets
-Add the Asset configuration to `app/config/config.yml` under assetic, like so:
-```yaml
-# Assetic Configuration
-assetic:
-    bundles:        [ 'CuriousIncMapFormTypeBundle' ]
 ```
