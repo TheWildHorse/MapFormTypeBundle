@@ -1,0 +1,20 @@
+{
+  "name": "map-form-type-bundle",
+  "homepage": "https://github.com/CuriousInc/MapFormTypeBundle",
+  "authors": [
+    "webber <webber.nl@gmail.com>",
+    "j63 <jwoudstr@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "Resources/public/vendor",
+    "test",
+    "tests"
+  ]
+}

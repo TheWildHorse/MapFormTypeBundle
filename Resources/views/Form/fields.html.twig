@@ -6,7 +6,7 @@
 
       {# Leaflet styles #}
       {% block map_leaflet_css %}
-        <link href="{{ asset('css/leaflet.css') }}" rel="stylesheet" />
+        <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.css') }}" rel="stylesheet" />
       {% endblock %}
 
     {% endblock %}
@@ -50,15 +50,18 @@
 
       {# Leaflet Scripts #}
       {% block map_leaflet_scripts %}
-        <script src="{{ asset('js/leaflet.js') }}"></script>
+        <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
       {% endblock %}
 
       {# Init Map #}
       <script>
         var mymap = L.map('{{ id }}_map').setView([51.505, -0.09], 13);
       </script>
+
       {# MapType Script #}
-      <script src="{{ asset('js/map-type.js') }}"></script>
+
+      <script src="{{ asset('bundles/curiousincmapformtype/js/leaflet-embed.js') }}"></script>
+
 
     {% endblock %}
 

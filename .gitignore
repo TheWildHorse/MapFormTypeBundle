@@ -4,6 +4,7 @@
 composer.lock
 phpunit.xml
 vendor/
+!Resources/public/vendor/leaflet/dist/*
 
 ## Convention:
 

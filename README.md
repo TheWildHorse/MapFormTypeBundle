@@ -52,3 +52,11 @@ twig:
     form_themes:
         - CuriousIncMapFormTypeBundle:Form:fields.html.twig
 ```
+
+#### 5) Configure the MapType assets
+Add the Asset configuration to `app/config/config.yml` under assetic, like so:
+```yaml
+# Assetic Configuration
+assetic:
+    bundles:        [ 'CuriousIncMapFormTypeBundle' ]
+```
