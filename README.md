@@ -5,7 +5,8 @@ Generic Map FormType for Symfony 3
 
 Branch | Travis | 
 ------ | ------ |
-master | [![Build Status](https://travis-ci.org/CuriousInc/MapFormTypeBundle.svg?branch=master)](https://travis-ci.org/CuriousInc/MapFormTypeBundle) | 
+master | [![Build Status](https://travis-ci.org/CuriousInc/MapFormTypeBundle.svg?branch=master)](https://travis-ci.org/CuriousInc/MapFormTypeBundle) |
+develop | [![Build Status](https://travis-ci.org/CuriousInc/MapFormTypeBundle.svg?branch=develop)](https://travis-ci.org/CuriousInc/MapFormTypeBundle) |
 
 ## Installation
 
