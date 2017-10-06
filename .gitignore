@@ -3,8 +3,9 @@
 .idea
 composer.lock
 phpunit.xml
-vendor/
-!Resources/public/vendor/leaflet/dist/*
+/vendor/
+/Resources/public/vendor/
+!/Resources/public/vendor/leaflet/dist/
 
 ## Convention:
 
