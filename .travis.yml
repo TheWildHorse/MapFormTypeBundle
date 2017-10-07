@@ -1,29 +1,26 @@
 language: php
-
 php:
-  - 7.1
-
+- 7.1
 env:
   global:
-    - TARGET=test
-
+  - TARGET=test
 matrix:
   fast_finish: true
   include:
-    - php: 7.1
-      env: TARGET=test
-
+  - php: 7.1
+    env: TARGET=test
 sudo: false
-
 cache:
   directories:
-    - $HOME/.composer/cache
-
+  - "$HOME/.composer/cache"
 before_install:
-  - if [ "$SYMFONY_VERSION" != "" ]; then composer require "symfony/symfony:${SYMFONY_VERSION}" --no-update; fi;
-  - if [ "$TRAVIS_PHP_VERSION" != "hhvm" ]; then echo "memory_limit=2G" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini; fi;
-
+- if [ "$SYMFONY_VERSION" != "" ]; then composer require "symfony/symfony:${SYMFONY_VERSION}"
+  --no-update; fi;
+- if [ "$TRAVIS_PHP_VERSION" != "hhvm" ]; then echo "memory_limit=2G" >> ~/.phpenv/versions/$(phpenv
+  version-name)/etc/conf.d/travis.ini; fi;
 install: composer update --prefer-dist --no-interaction $COMPOSER_FLAGS
-
 script:
- - make $TARGET
+- make $TARGET
+notifications:
+  slack:
+    secure: CvoAbowsQiGKKQ6mLE0BXAbHaYlxcK9VLppG0lmTZTZLmWthk9F1z0cCPEe6g7D9Y3oRev/qQw2xT0edP+5QOXVM6N7aG5GwDBQMYzvmoa5iO1Q8bF6Yk9YGs3miP+zn6UqB6RBxQfg2RdAzQPRwSLwCosecEvzaHgGZDfKdcnYi7i2w0U1LOj16covtMF7NzpfBpq59MoK42JiN25MkTuJuZZy6UnXAIWvf1FCKLNwe40jzV96q5VBq3vC5iawH6zJc7O0EKdllNa+mCC25YmpBM+vq454X4E5pimD7OrMTlPiEWwgJBk+nJeGOrcpVfXeB34IuDbC6pTkpvnkRcPVXckpPZJAV/1V//WMoxK5fMGkptJ17a0hf53mwUkxj1Mc3z65GqwMqJMgbvag9CRmNpzHeUSTlQTWC0O6g+YTNuqDkjd0xlvuC2aocF9sKOP7C+njDGvJqkB+nt8q/4c7WjnBFnXJ2BBw4ehVuWhOmIC1kbcVwJlfQ7ZaCy9HhugeLx5CY3uCHanVHeQt/awKGhS8iprVBmfM1mxRFDZR46+34rehoaeSIpIm42jdEHCLWnt0YNBDuhDotUP64r+60hKJM9hcxvJb1zsiBVBVNWn2QjZxXQo2+iyHUAcnFEqX1QdftmVy01VibRvn/azMQbj2eJEVKsc2B9Q1ba1g=
