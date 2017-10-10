@@ -42,19 +42,16 @@ var CuriousMap = function (options) {
 
   this.marker.on('dragend', function(){
     var position = $this.marker.getLatLng();
+    $this.updatePosition(position);
     $this.marker.setLatLng(new L.LatLng(position.lat, position.lng),{draggable:'true'});
     $this.map.panTo(new L.LatLng(position.lat, position.lng));
     $this.setMarkerFormFields();
   });
 
-  $(this.latId + "," + this.longId).change(function(){
-    var newPosition = new L.LatLng($($this.latId).val(),  $($this.longId).val());
-    $this.updateMap(newPosition);
-  });
-
   $(this.currentLocationId).click(function() {
     $this.map.on('locationfound', function(e){
       var newPosition = e.latlng;
+      $this.updatePosition(newPosition);
       $this.updateMap(newPosition);
       $this.setMarkerFormFields();
     });
@@ -66,12 +63,17 @@ CuriousMap.prototype.addMarker = function() {
   return L.marker([this.lat, this.long],{draggable:'true'}).addTo(this.map);
 };
 
+CuriousMap.prototype.updatePosition = function(newPosition) {
+  this.lat = newPosition.lat;
+  this.long = newPosition.lng;
+};
+
 CuriousMap.prototype.updateMap = function(newPosition) {
   this.marker.setLatLng(newPosition, {draggable: 'true'});
   this.map.flyTo(newPosition, 17, {duration: 0.7});
 };
 
 CuriousMap.prototype.setMarkerFormFields = function() {
-  $(this.latId).attr("value", this.marker.getLatLng().lat);
-  $(this.longId).attr("value", this.marker.getLatLng().lng);
+  $(this.latId).val(this.marker.getLatLng().lat);
+  $(this.longId).val(this.marker.getLatLng().lng);
 };
