@@ -35,24 +35,24 @@ var CuriousMap = function (options) {
 
   var $this = this;
   L.Control.geocoder({defaultMarkGeocode: false}).on('markgeocode', function(e) {
-    var newPosition = e.geocode.center;
-    $this.updateMap(newPosition);
+    var position = e.geocode.center;
+    $this.updateMap(position);
     $this.setMarkerFormFields();
   }).addTo($this.map);
 
   this.marker.on('dragend', function(){
     var position = $this.marker.getLatLng();
     $this.updatePosition(position);
-    $this.marker.setLatLng(new L.LatLng(position.lat, position.lng),{draggable:'true'});
+    $this.marker.setLatLng(new L.LatLng(position.lat, position.lng), {draggable:'true'});
     $this.map.panTo(new L.LatLng(position.lat, position.lng));
     $this.setMarkerFormFields();
   });
 
   $(this.currentLocationId).click(function() {
     $this.map.on('locationfound', function(e){
-      var newPosition = e.latlng;
-      $this.updatePosition(newPosition);
-      $this.updateMap(newPosition);
+      var position = e.latlng;
+      $this.updatePosition(position);
+      $this.updateMap(position);
       $this.setMarkerFormFields();
     });
     $this.map.locate({setView: false});
@@ -60,17 +60,17 @@ var CuriousMap = function (options) {
 };
 
 CuriousMap.prototype.addMarker = function() {
-  return L.marker([this.lat, this.long],{draggable:'true'}).addTo(this.map);
+  return L.marker([this.lat, this.long], {draggable:'true'}).addTo(this.map);
 };
 
-CuriousMap.prototype.updatePosition = function(newPosition) {
-  this.lat = newPosition.lat;
-  this.long = newPosition.lng;
+CuriousMap.prototype.updatePosition = function(position) {
+  this.lat = position.lat;
+  this.long = position.lng;
 };
 
-CuriousMap.prototype.updateMap = function(newPosition) {
-  this.marker.setLatLng(newPosition, {draggable: 'true'});
-  this.map.flyTo(newPosition, 17, {duration: 0.7});
+CuriousMap.prototype.updateMap = function(position) {
+  this.marker.setLatLng(position, {draggable: 'true'});
+  this.map.flyTo(position, 17, {duration: 0.7});
 };
 
 CuriousMap.prototype.setMarkerFormFields = function() {
