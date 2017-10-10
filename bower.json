@@ -16,5 +16,9 @@
     "Resources/public/vendor",
     "test",
     "tests"
-  ]
+  ],
+  "devDependencies": {
+    "leaflet": "^1.2.0",
+    "leaflet-control-geocoder": "^1.5.5"
+  }
 }
