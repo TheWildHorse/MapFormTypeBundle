@@ -6,6 +6,7 @@ phpunit.xml
 /vendor/
 /Resources/public/vendor/
 !/Resources/public/vendor/leaflet/dist/
+!/Resources/public/vendor/leaflet-control-geocoder/dist/
 
 ## Convention:
 

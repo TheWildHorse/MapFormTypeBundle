@@ -7,6 +7,7 @@
       {# Leaflet styles #}
       {% block map_leaflet_css %}
         <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.css') }}" rel="stylesheet" />
+        <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.css') }}" rel="stylesheet" />
       {% endblock %}
 
     {% endblock %}
@@ -28,12 +29,9 @@
 
       {# Map Placeholder #}
       <div id="{{ id }}_map" style="
-      {% if map_dimensions.height is defined %}height: {{ map_dimensions.height }};{% endif %}
-      {% if map_dimensions.width is defined %}width: {{ map_dimensions.width }};{% endif %}
-        display: flex; justify-content: center; align-items: center; border: 1px solid #ccc; margin-bottom: 14px;">
-        <span>
-          Map Placeholder
-        </span>
+        {% if map_dimensions.height is defined %}height: {{ map_dimensions.height }};{% endif %}
+        {% if map_dimensions.width is defined %}width: {{ map_dimensions.width }};{% endif %}
+        margin-bottom: 14px;">
       </div>
 
       {# Fields as defined in FormBuilder #}
@@ -51,16 +49,26 @@
       {# Leaflet Scripts #}
       {% block map_leaflet_scripts %}
         <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
+        <script
+          src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.js') }}"
+        ></script>
       {% endblock %}
 
       {# Init Map #}
-      <script>
-        var mymap = L.map('{{ id }}_map').setView([51.505, -0.09], 13);
-      </script>
-
-      {# MapType Script #}
       <script src="{{ asset('bundles/curiousincmapformtype/js/leaflet-embed.js') }}"></script>
-
+      <script>
+        var $mapView = new CuriousMap(
+          {
+            latitude: {{ defaults.latitude }},
+            longitude: {{ defaults.longitude }},
+            zoom: {{ defaults.zoom }},
+            mapId: '{{ id }}_map',
+            latId: '{{ id }}_latitude',
+            longId: '{{ id }}_longitude',
+            currentLocationId: undefined
+          }
+        );
+      </script>
     {% endblock %}
 
   </div>
