@@ -26,6 +26,16 @@
         "symfony/console": "^3.3",
         "symfony/phpunit-bridge": "^3.3"
     },
+    "extra": {
+        "scripts-dev": {
+            "post-install-cmd": [
+                "yarn"
+            ],
+            "post-update-cmd": [
+                "yarn"
+            ]
+        }
+    },
     "autoload": {
         "psr-4": {
             "CuriousInc\\MapFormTypeBundle\\": ""

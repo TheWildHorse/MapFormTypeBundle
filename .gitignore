@@ -1,12 +1,20 @@
 ## Custom:
 
 .idea
+
+## Composer, Yarn, Npm:
+
 composer.lock
-phpunit.xml
+yarn-error.log
 /vendor/
-/Resources/public/vendor/
-!/Resources/public/vendor/leaflet/dist/
-!/Resources/public/vendor/leaflet-control-geocoder/dist/
+/node_modules/
+
+## Distribution
+
+phpunit.xml
+Resources/public/vendor/*
+!Resources/public/vendor/**/dist/*
+!Resources/public/vendor/**/dist/**/*
 
 ## Convention:
 
