@@ -33,7 +33,8 @@ indent_size = 2
 
 # Common sense standard
 [**.md]
-indent_style = tab
+indent_style = space
+indent_size = 4
 
 # Original npm spacing
 [{package}.json]
