@@ -29,10 +29,10 @@
     "extra": {
         "scripts-dev": {
             "post-install-cmd": [
-                "yarn"
+                "yarn && bower install"
             ],
             "post-update-cmd": [
-                "yarn"
+                "yarn && bower install"
             ]
         }
     },
