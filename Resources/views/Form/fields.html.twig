@@ -28,7 +28,6 @@
 
 
       {# Map Placeholder #}
-      {#<a id="{{ id }}_current_location" href="#">Spring naar huidige locatie</a>#}
       <div id="{{ id }}_map" style="
         {% if map_dimensions.height is defined %}height: {{ map_dimensions.height }};{% endif %}
         {% if map_dimensions.width is defined %}width: {{ map_dimensions.width }};{% endif %}
@@ -50,20 +49,26 @@
       {# Leaflet Scripts #}
       {% block map_leaflet_scripts %}
         <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
-        <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.js') }}"></script>
+        <script
+          src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.js') }}"
+        ></script>
       {% endblock %}
 
       {# Init Map #}
-      <script>
-        var $mapId = '{{ id }}_map';
-        var $latId = '#{{ id }}_latitude';
-        var $longId = '#{{ id }}_longitude';
-        var $currentLocationId = '#{{ id }}_current_location';
-      </script>
-
-      {# MapType Script #}
       <script src="{{ asset('bundles/curiousincmapformtype/js/leaflet-embed.js') }}"></script>
-
+      <script>
+        var $mapView = new CuriousMap(
+          {
+            latitude: {{ defaults.latitude }},
+            longitude: {{ defaults.longitude }},
+            zoom: {{ defaults.zoom }},
+            mapId: '{{ id }}_map',
+            latId: '{{ id }}_latitude',
+            longId: '{{ id }}_longitude',
+            currentLocationId: undefined
+          }
+        );
+      </script>
     {% endblock %}
 
   </div>

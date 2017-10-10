@@ -6,13 +6,14 @@
  * @author j63 <jwoudstr@gmail.com>
  */
 
-var CuriousMap = function (lat, long, fieldIds) {
-  this.lat = lat;
-  this.long = long;
-  this.mapId = fieldIds.mapId;
-  this.latId = fieldIds.latId;
-  this.longId = fieldIds.longId;
-  this.currentLocationId = fieldIds.currentLocationId;
+var CuriousMap = function (options) {
+  this.lat = options.latitude;
+  this.long = options.longitude;
+  this.zoom = options.zoom;
+  this.mapId = options.mapId;
+  this.latId = '#' + options.latId;
+  this.longId = '#' + options.longId;
+  this.currentLocationId = '#' + options.currentLocationId;
 
   // set up the map
   this.map = new L.Map(this.mapId);
@@ -23,7 +24,7 @@ var CuriousMap = function (lat, long, fieldIds) {
   var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 22, attribution: osmAttrib});
 
   // start the map in a given location
-  this.map.setView(new L.LatLng(this.lat, this.long), 9);
+  this.map.setView(new L.LatLng(this.lat, this.long), this.zoom);
   this.map.addLayer(osm);
 
   // Add marker
@@ -33,11 +34,9 @@ var CuriousMap = function (lat, long, fieldIds) {
   this.setMarkerFormFields();
 
   var $this = this;
-  L.Control.geocoder({
-    defaultMarkGeocode: false
-  }).on('markgeocode', function(e) {
-    var new_position = e.geocode.center;
-    $this.updateMap(new_position);
+  L.Control.geocoder({defaultMarkGeocode: false}).on('markgeocode', function(e) {
+    var newPosition = e.geocode.center;
+    $this.updateMap(newPosition);
     $this.setMarkerFormFields();
   }).addTo($this.map);
 
@@ -49,14 +48,14 @@ var CuriousMap = function (lat, long, fieldIds) {
   });
 
   $(this.latId + "," + this.longId).change(function(){
-    var new_position = new L.LatLng($($this.latId).val(),  $($this.longId).val());
-    $this.updateMap(new_position);
+    var newPosition = new L.LatLng($($this.latId).val(),  $($this.longId).val());
+    $this.updateMap(newPosition);
   });
 
   $(this.currentLocationId).click(function() {
     $this.map.on('locationfound', function(e){
-      var new_position = e.latlng;
-      $this.updateMap(new_position);
+      var newPosition = e.latlng;
+      $this.updateMap(newPosition);
       $this.setMarkerFormFields();
     });
     $this.map.locate({setView: false});
@@ -76,18 +75,3 @@ CuriousMap.prototype.setMarkerFormFields = function() {
   $(this.latId).attr("value", this.marker.getLatLng().lat);
   $(this.longId).attr("value", this.marker.getLatLng().lng);
 };
-
-
-$(document).ready(function() {
-  var coordinate = {
-    lat: 54.2623429,
-    long: 6.791819799999985
-  };
-  var fieldIds = {
-    mapId: $mapId,
-    latId: $latId,
-    longId: $longId,
-    currentLocationId: $currentLocationId
-  };
-  var leafletMap = new CuriousMap(coordinate.lat, coordinate.long, fieldIds);
-});
