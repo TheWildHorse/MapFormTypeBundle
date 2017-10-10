@@ -1,0 +1,42 @@
+# top-most EditorConfig file
+root = true
+
+# Unix-style line-endings and end with blank line
+[**]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Standard at: https://github.com/felixge/node-style-guide
+[**.{js,json}]
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+quote_type = single
+curly_bracket_next_line = false
+spaces_around_operators = true
+space_after_control_statements = true
+space_after_anonymous_functions = true
+spaces_in_brackets = false
+
+# Common sense standard
+[**.{yml,css}]
+trim_trailing_whitespace = true
+indent_style = tab
+
+# Common sense standard
+[**.{html,twig}]
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Common sense standard
+[**.md]
+indent_style = space
+indent_size = 4
+
+# Original npm spacing
+[{package}.json]
+indent_style = space
+indent_size = 2
