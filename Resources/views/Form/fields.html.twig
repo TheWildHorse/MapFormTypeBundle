@@ -75,9 +75,8 @@
             longitude: {{ defaults.longitude }},
             zoom: {{ defaults.zoom }},
             mapId: '{{ id }}_map',
-            latId: '{{ id }}_latitude',
-            longId: '{{ id }}_longitude',
-            currentLocationId: undefined
+            fields: JSON.parse('{{ fields|json_encode|e('js') }}'),
+            fieldId: {{ id }}
           }
         );
       </script>
