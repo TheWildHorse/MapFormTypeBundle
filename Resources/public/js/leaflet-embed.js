@@ -9,27 +9,32 @@
 var CuriousMap = function(options) {
   var $this = this;
 
-  // Defaults
+  this.formId = options.formId;
   this.lat = options.latitude;
   this.long = options.longitude;
   this.zoom = options.zoom;
   this.mapId = options.mapId;
 
   // Configured elements
-  var formIdPrefix = options.fieldId;
-  this.initialiseFormFields(options.fields, formIdPrefix);
+  this.initialiseFormFields(options.fields, this.formId);
 
   // Templated element ids
-  this.snapButtonId = '#' + formIdPrefix + '_location_snap';
-  this.searchAddressInputId = '#' + formIdPrefix + '_location_search_input';
-  this.searchButtonId = '#' + formIdPrefix + '_location_search_btn';
+  this.snapButtonId = '#' + this.formId + '_location_snap';
+  this.searchAddressInputId = '#' + this.formId + '_location_search_input';
+  this.searchButtonId = '#' + this.formId + '_location_search_btn';
   $(this.searchAddressInputId).focus();
 
   // Set up the map
   this.map = new L.Map(this.mapId);
-  this.map.on('locationfound', this.mapLocationFound);
 
-  // Create the tile layer with correct attribution
+  // SnapToLocation button trigger
+  if (undefined !== options.snapButtonId) {
+    $(document).on('click', `#${options.snapButtonId}`, function() {
+      $this.onSnapToLocationPressed();
+    });
+  }
+
+  // create the tile layer with correct attribution
   var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
   var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
   var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 20, attribution: osmAttrib});
@@ -53,10 +58,7 @@ var CuriousMap = function(options) {
     }
   });
 
-  // Snap to location action
-  $(document).on('click', this.currentLocationId, function() {
-    $this.map.locate({setView: false});
-  });
+
 
   // Search address from user-provided input
   $(document).on('click', this.searchButtonId, function() {
@@ -176,8 +178,6 @@ CuriousMap.prototype.initialiseFormFields = function(fields, formIdPrefix) {
  * @returns int
  */
 CuriousMap.prototype.determineZoomLevel = function(type) {
-  console.log(type);
-
   var level;
   if (type === 'house' || type === 'residential') {
     level = 18;
@@ -191,4 +191,29 @@ CuriousMap.prototype.determineZoomLevel = function(type) {
     level = 8
   }
   return level;
+};
+
+/**
+ * EventHandler for when the SnapToCurrentLocation button is pressed
+ */
+CuriousMap.prototype.onSnapToLocationPressed = function() {
+  var bootstrapJsIsLoaded = (typeof $().modal === 'function')
+
+  if (window.location.protocol === 'https:') {
+    // Locate device's location on the map
+    this.map.locate({
+      watch: true,
+      enableHighAccuracy: true,
+    });
+  } else if (bootstrapJsIsLoaded) {
+    // Show a warning that this functionality does not work over http
+    var $modal = $(`#${this.formId}_modal`)
+      .modal()
+      .addClass('security')
+      .find('.alert_no_secure_connection')
+      .show();
+  } else {
+    // Fallback for when bootstrap is not loaded
+    alert('For security reasons, location will not be retreived over an insecure connection');
+  }
 };
