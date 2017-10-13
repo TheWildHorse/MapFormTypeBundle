@@ -5,75 +5,28 @@
  * @author webber <webber.nl@gmail.com>
  * @author j63 <jwoudstr@gmail.com>
  */
-
-var CuriousMap = function(options) {
-  var $this = this;
-
+var CuriousMap = function (options) {
+  // Object variables
   this.formId = options.formId;
   this.lat = options.latitude;
   this.long = options.longitude;
   this.zoom = options.zoom;
   this.mapId = options.mapId;
 
-  // Configured elements
-  this.initialiseFormFields(options.fields, this.formId);
-
-  // Templated element ids
-  this.snapButtonId = '#' + this.formId + '_location_snap';
-  this.searchAddressInputId = '#' + this.formId + '_location_search_input';
-  this.searchButtonId = '#' + this.formId + '_location_search_btn';
-  $(this.searchAddressInputId).focus();
-
-  // Set up the map
+  // Initialise Map
   this.map = new L.Map(this.mapId);
-
-  // SnapToLocation button trigger
-  if (undefined !== options.snapButtonId) {
-    $(document).on('click', `#${options.snapButtonId}`, function() {
-      $this.onSnapToLocationPressed();
-    });
-  }
-
-  // create the tile layer with correct attribution
   var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
   var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-  var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 20, attribution: osmAttrib});
-
-  // Start the map in a given location
-  this.map.setView(new L.LatLng(this.lat, this.long), this.zoom);
+  var osm = new L.TileLayer(osmUrl, { minZoom: 1, maxZoom: 20, attribution: osmAttrib });
   this.map.addLayer(osm);
+  this.map.setView(new L.LatLng(this.lat, this.long), this.zoom);
+  this.updateMarker();
 
-  // Add marker
-  this.marker = L.marker([this.lat, this.long], {draggable: 'true'}).addTo(this.map);
-  this.marker.on('dragend', function() {
-    $this.updateMap(this.getLatLng());
-  });
-
-  // Have the enter key submit the search instead of the form
-  $(document).on('keydown', this.searchAddressInputId, function(e) {
-    if (e.keyCode === 13) {
-      e.preventDefault();
-      $($this.searchButtonId).click();
-      return false;
-    }
-  });
-
-
-
-  // Search address from user-provided input
-  $(document).on('click', this.searchButtonId, function() {
-    var addressString = $(this).closest('div').find('input').val();
-    $.getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&&q=' + addressString, function(data) {
-      if (data.length !== 0) {
-        var details = data[0];
-        var position = new L.LatLng(details.lat, details.lon);
-        $this.updateMap(position);
-
-        // Zoom to appropriate level
-        $this.map.setZoom($this.determineZoomLevel(details.type));
-      }
-    });
-  });
+  // Initialise CuriousMap
+  this.initialiseSearchFields();
+  this.initialiseFormFields(options.fields);
+  this.initialiseTriggers();
+  this.focus();
 };
 
 /**
@@ -81,10 +34,10 @@ var CuriousMap = function(options) {
  *
  * @param position
  */
-CuriousMap.prototype.updateMap = function(position) {
+CuriousMap.prototype.updateLocation = function (position) {
   this.lat = position.lat;
   this.long = position.lng;
-  this.marker.setLatLng(position, {draggable: 'true'});
+  this.$marker.setLatLng(position, { draggable: 'true' });
   this.map.panTo(position);
   this.updateFormFields(position);
 };
@@ -96,10 +49,12 @@ CuriousMap.prototype.updateMap = function(position) {
  *
  * @param position
  */
-CuriousMap.prototype.updateFormFields = function(position) {
+CuriousMap.prototype.updateFormFields = function (position) {
   var $this = this;
 
-  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function(data) {
+  this.clearFormFields();
+
+  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
     // Update the values that are always present
     $this.fields.latitude.$field.val(position.lat);
     $this.fields.longitude.$field.val(position.lng);
@@ -149,55 +104,125 @@ CuriousMap.prototype.updateFormFields = function(position) {
 };
 
 /**
- * Format the form fields array to contain
- * - our internal input field name as key
- * - optionally defined field name
- * - jquery field selector
- *
- * @param fields
- * @param formIdPrefix
+ * Clear all associated form fields
  */
-CuriousMap.prototype.initialiseFormFields = function(fields, formIdPrefix) {
+CuriousMap.prototype.clearFormFields = function () {
+  var $this = this;
+
+  $.each($this.fields, function (name, field) {
+    field.$field.val('');
+  });
+};
+
+/**
+ * Initialise search fields
+ */
+CuriousMap.prototype.initialiseSearchFields = function () {
+  this.$snapCurrent = $(`#${this.formId}_location_snap`);
+  this.$searchField = $(`#${this.formId}_location_search_input`);
+  this.$searchBtn = $(`#${this.formId}_location_search_btn`);
+};
+
+/**
+ * Link the form fields to this object
+ */
+CuriousMap.prototype.initialiseFormFields = function (fields) {
   var $this = this;
 
   $this.fields = {};
-  $.each(fields, function(name, options) {
+  $.each(fields, function (name, options) {
     if (options.name === undefined) {
       options.name = name;
     }
 
-    options.$field = $(`#${formIdPrefix}_${options.name}`);
+    options.$field = $(`#${$this.formId}_${options.name}`);
     $this.fields[name] = options;
   });
 };
 
 /**
- * Determine appropriate zoomlevel based on information type
- *
- * @param type
- * @returns int
+ * Initialise triggers
  */
-CuriousMap.prototype.determineZoomLevel = function(type) {
+CuriousMap.prototype.initialiseTriggers = function () {
+  var $this = this;
+
+  // SnapToLocation button trigger
+  if (undefined !== this.$snapCurrent) {
+    this.$snapCurrent.on('click', function () {
+      $this.onSnapToLocationPressed();
+    });
+  }
+
+  // Dropping the marker somewhere on the map
+  this.$marker.on('dragend', function () {
+    $this.updateLocation(this.getLatLng());
+  });
+
+  // Enter in searchField
+  this.$searchField.on('keydown', function (e) {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      $this.searchAddress($(this).val());
+    }
+  });
+
+  // Search button pressed
+  this.$searchBtn.on('click', function () {
+    $this.searchAddress($this.$searchField.val());
+  });
+};
+
+/**
+ * Update the marker according to current latitude and longitude
+ */
+CuriousMap.prototype.updateMarker = function () {
+  this.$marker = L.marker([this.lat, this.long], { draggable: 'true' }).addTo(this.map);
+};
+
+CuriousMap.prototype.searchAddress = function (address) {
+  var $this = this;
+
+  $.getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + address, function (data) {
+    if (data.length) {
+      var details = data[0];
+      var position = new L.LatLng(details.lat, details.lon);
+      $this.updateLocation(position);
+      $this.map.setZoom($this.determineZoomLevel(details.type));
+    }
+  });
+};
+
+/**
+ * Determine appropriate zoom-level based on information type
+ */
+CuriousMap.prototype.determineZoomLevel = function (type) {
   var level;
   if (type === 'house' || type === 'residential') {
     level = 18;
   } else if (type === 'neighbourhood') {
-    level = 16
+    level = 16;
   } else if (type === 'city') {
-    level = 13
+    level = 13;
   } else if (type === 'administrative') {
-    level = 11
+    level = 11;
   } else {
-    level = 8
+    level = 8;
   }
   return level;
 };
 
 /**
+ * Focus the searchField when focusing this object
+ */
+CuriousMap.prototype.focus = function () {
+  this.$searchField.focus();
+}
+
+/**
  * EventHandler for when the SnapToCurrentLocation button is pressed
  */
-CuriousMap.prototype.onSnapToLocationPressed = function() {
-  var bootstrapJsIsLoaded = (typeof $().modal === 'function')
+CuriousMap.prototype.onSnapToLocationPressed = function () {
+  var bootstrapJsIsLoaded = (typeof $().modal === 'function');
 
   if (window.location.protocol === 'https:') {
     // Locate device's location on the map
