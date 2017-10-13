@@ -76,7 +76,7 @@
             zoom: {{ defaults.zoom }},
             mapId: '{{ id }}_map',
             fields: JSON.parse('{{ fields|json_encode|e('js') }}'),
-            fieldId: {{ id }}
+            fieldId: '{{ id }}'
           }
         );
       </script>
