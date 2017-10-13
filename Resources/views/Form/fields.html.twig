@@ -7,7 +7,6 @@
       {# Leaflet styles #}
       {% block map_leaflet_css %}
         <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.css') }}" rel="stylesheet" />
-        <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.css') }}" rel="stylesheet" />
       {% endblock %}
 
       {# Bundle specific #}
@@ -64,7 +63,6 @@
       {# Leaflet Scripts #}
     {% block map_leaflet_scripts %}
       <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
-      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.js') }}"></script>
     {% endblock %}
 
       {# Init Map #}
@@ -80,7 +78,7 @@
             latId: '{{ id }}_latitude',
             longId: '{{ id }}_longitude',
             snapButtonId: '{{ id }}_location_snap',
-            currentLocationId: undefined
+            fields: {{ fields|json_encode|raw }},
           }
         );
       </script>
