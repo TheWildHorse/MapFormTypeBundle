@@ -1,5 +1,5 @@
 {% block map_widget %}
-  <div {{ block('widget_container_attributes') }}>
+  <div class="map-type" {{ block('widget_container_attributes') }}>
 
     {# Bundle Styles #}
     {% block map_css %}
@@ -7,8 +7,10 @@
       {# Leaflet styles #}
       {% block map_leaflet_css %}
         <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.css') }}" rel="stylesheet" />
-        <link href="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.css') }}" rel="stylesheet" />
       {% endblock %}
+
+      {# Bundle specific #}
+      <link href="{{ asset('bundles/curiousincmapformtype/css/style.css') }}" rel="stylesheet" />
 
     {% endblock %}
 
@@ -17,12 +19,25 @@
 
       {# Search Field #}
       <div class="form-group">
-        <div class="col-xs-9 col-sm-8 col-md-7 col-lg-6">
-          <input type="text" id="{{ id }}_search_input" class="form-control"
-                 placeholder="{% trans %}Search for a location{% endtrans %}" />
-        </div>
-        <div class="col-xs-3">
-          <span class="btn btn-default">{% trans %}Search{% endtrans %}</span>
+        <div class="col-md-9 col-lg-6">
+          <div class="input-group">
+            <span class="input-group-btn">
+              <button id="{{ id }}_location_snap" class="btn btn-default" type="button"
+                      aria-label="{{ 'search.button.current_location.aria_label'|trans({}, 'CuriousIncMapFormTypeBundle') }}">
+                <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
+                </svg>
+              </button>
+            </span>
+            <input id="{{ id }}_location_search_input" type="text" class="form-control"
+                   placeholder="{{ 'search.input.placeholder'|trans({}, 'CuriousIncMapFormTypeBundle') }}" />
+            <span class="input-group-btn">
+              <button id="{{ id }}_location_search_btn" class="btn btn-default" type="button">
+                {{ 'search.button.submit.text'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+              </button>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -31,8 +46,7 @@
       <div id="{{ id }}_map" style="
         {% if map_dimensions.height is defined %}height: {{ map_dimensions.height }};{% endif %}
         {% if map_dimensions.width is defined %}width: {{ map_dimensions.width }};{% endif %}
-        margin-bottom: 14px;">
-      </div>
+        margin-bottom: 14px;"></div>
 
       {# Fields as defined in FormBuilder #}
       {% block map_fields %}
@@ -47,12 +61,9 @@
     {% block map_scripts %}
 
       {# Leaflet Scripts #}
-      {% block map_leaflet_scripts %}
-        <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
-        <script
-          src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet-control-geocoder/dist/Control.Geocoder.js') }}"
-        ></script>
-      {% endblock %}
+    {% block map_leaflet_scripts %}
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
+    {% endblock %}
 
       {# Init Map #}
       <script src="{{ asset('bundles/curiousincmapformtype/js/leaflet-embed.js') }}"></script>
@@ -62,13 +73,81 @@
             latitude: {{ defaults.latitude }},
             longitude: {{ defaults.longitude }},
             zoom: {{ defaults.zoom }},
+            formId: '{{ id }}',
             mapId: '{{ id }}_map',
             latId: '{{ id }}_latitude',
             longId: '{{ id }}_longitude',
-            currentLocationId: undefined
+            snapButtonId: '{{ id }}_location_snap',
+            fields: {{ fields|json_encode|raw }},
           }
         );
       </script>
+    {% endblock %}
+
+    {# Bootstrap Modal #}
+    {% block map_modal %}
+      <!-- Modal -->
+      <div class="modal fade" id="{{ id }}_modal" role="dialog">
+        <div class="modal-dialog">
+
+          {# Modal Content #}
+          <div class="modal-content">
+
+            {# Modal Header #}
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-header-text default">
+                <span class="glyphicon glyphicon-info-sign"></span>
+                <span>
+                  {{ 'modal.header.text.default'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+                </span>
+              </h4>
+              <h4 class="modal-header-text success">
+                <span class="glyphicon glyphicon-ok-sign"></span>
+                <span>
+                  {{ 'modal.header.text.success'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+                </span>
+              </h4>
+              <h4 class="modal-header-text security">
+                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                <span>
+                  {{ 'modal.header.text.security'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+                </span>
+              </h4>
+              <h4 class="modal-header-text warning">
+                <span class="glyphicon glyphicon-warning-sign"></span>
+                <span>
+                  {{ 'modal.header.text.warning'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+                </span>
+              </h4>
+              <h4 class="modal-header-text danger">
+                <span class="glyphicon glyphicon-hazard-sign"></span>
+                <span>
+                  {{ 'modal.header.text.danger'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+                </span>
+              </h4>
+            </div>
+
+            {# Modal Body #}
+            <div class="modal-body">
+              <p class="message alert_no_secure_connection">
+                {{ 'message.location_service.alert_no_secure_connection'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+              </p>
+            </div>
+
+            {# Modal Footer #}
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">
+                <span class="glyphicon glyphicon-remove"></span>
+                {{ 'modal.button.close'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      <!-- End modal -->
     {% endblock %}
 
   </div>
