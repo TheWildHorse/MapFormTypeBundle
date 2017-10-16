@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="message.map.base_layer.not_set">
         <source>message.map.base_layer.not_set</source>
-        <target>No base layer has been configured for this page.</target>
+        <target>No base layer has been configured for the map on this page.</target>
       </trans-unit>
     </body>
   </file>

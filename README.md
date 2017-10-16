@@ -46,8 +46,7 @@ class AppKernel extends Kernel
 #### 4) Configure the Bundle
 Add the following configuration to `app/config/config.yml` and change it to needs or wishes accordingly:
 ```yaml
-curious_inc_map_form_type:
-    example:              ~
+curious_inc_map_form_type: ~
 ```
 
 #### 5) Configure the MapType template
