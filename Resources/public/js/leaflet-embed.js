@@ -8,17 +8,19 @@
 var CuriousMap = function (options) {
   // Object variables
   this.formId = options.formId;
-  this.lat = options.latitude;
-  this.long = options.longitude;
-  this.zoom = options.zoom;
-  this.mapId = options.mapId;
+  this.mapId = this.formId + '_map';
+  this.$modal = $(`#${this.formId}_modal`);
+
+  // Set defaults
+  this.lat = options.defaults.latitude;
+  this.long = options.defaults.longitude;
+  this.zoom = options.defaults.zoom;
 
   // Initialise Map
   this.map = new L.Map(this.mapId);
-  var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-  var osm = new L.TileLayer(osmUrl, { minZoom: 1, maxZoom: 20, attribution: osmAttrib });
-  this.map.addLayer(osm);
+  this.initialiseBaseLayer(options.baseLayer);
+  this.initialiseOverlays(options.overlays);
+
   this.map.setView(new L.LatLng(this.lat, this.long), this.zoom);
   this.updateMarker();
 
@@ -115,6 +117,82 @@ CuriousMap.prototype.clearFormFields = function () {
 };
 
 /**
+ * Add a layer
+ */
+CuriousMap.prototype.addLayer = function (settings) {
+  var layer;
+
+  if (settings.url === undefined) {
+    // Do not process layer without url
+  } else if (settings.type === 'TileLayer') {
+    // Create TileLayer
+    layer = this.createTileLayer(settings);
+  } else {
+    // Do not process unknown layerType
+  }
+
+  if (layer !== undefined) {
+    this.map.addLayer(layer);
+  }
+
+  return layer;
+};
+
+/**
+ * Create and return a TileLayer
+ */
+CuriousMap.prototype.createTileLayer = function (settings) {
+  return new L.TileLayer(
+    settings.url,
+    {
+      minZoom: settings.minZoom || 1,
+      maxZoom: settings.maxZoom || 20,
+      attribution: settings.attribution || '',
+      subdomains: settings.subdomains || 'abc'
+    }
+  );
+};
+
+/**
+ * Initialise the baseLayer
+ */
+CuriousMap.prototype.initialiseBaseLayer = function (settings) {
+  var $this = this;
+
+  if (settings.url === undefined || settings.type === undefined) {
+    $(document).ready(function () {
+      $this.$modal
+        .modal()
+        .attr('class', 'modal fade')
+        .addClass('default')
+        .find('.alert_no_base_layer')
+        .show();
+    });
+  } else {
+    this.addLayer(settings);
+  }
+};
+
+/**
+ * Initialise Overlays
+ */
+CuriousMap.prototype.initialiseOverlays = function (overlays) {
+  var $this = this;
+
+  // Add each overlay to the map
+  $.each(overlays, function (name, overlay) {
+    L.WMS.overlay(
+      overlay.url,
+      {
+        layers: overlay.layers.join(),
+        format: overlay.format || 'image/png',
+        transparent: overlay.transparent || true
+      }
+    ).addTo($this.map);
+  });
+};
+
+/**
  * Initialise search fields
  */
 CuriousMap.prototype.initialiseSearchFields = function () {
@@ -149,7 +227,7 @@ CuriousMap.prototype.initialiseTriggers = function () {
   // SnapToLocation button trigger
   if (undefined !== this.$snapCurrent) {
     this.$snapCurrent.on('click', function () {
-      $this.onSnapToLocationPressed();
+      $this.snapToLocation();
     });
   }
 
@@ -179,6 +257,9 @@ CuriousMap.prototype.updateMarker = function () {
   this.$marker = L.marker([this.lat, this.long], { draggable: 'true' }).addTo(this.map);
 };
 
+/**
+ * Search for an address
+ */
 CuriousMap.prototype.searchAddress = function (address) {
   var $this = this;
 
@@ -216,29 +297,25 @@ CuriousMap.prototype.determineZoomLevel = function (type) {
  */
 CuriousMap.prototype.focus = function () {
   this.$searchField.focus();
-}
+};
 
 /**
- * EventHandler for when the SnapToCurrentLocation button is pressed
+ * Snap to current location (HTTPS/Local only)
  */
-CuriousMap.prototype.onSnapToLocationPressed = function () {
-  var bootstrapJsIsLoaded = (typeof $().modal === 'function');
-
+CuriousMap.prototype.snapToLocation = function () {
   if (window.location.protocol === 'https:') {
     // Locate device's location on the map
     this.map.locate({
       watch: true,
-      enableHighAccuracy: true,
+      enableHighAccuracy: true
     });
-  } else if (bootstrapJsIsLoaded) {
+  } else {
     // Show a warning that this functionality does not work over http
-    var $modal = $(`#${this.formId}_modal`)
+    this.$modal
       .modal()
+      .attr('class', 'modal fade')
       .addClass('security')
       .find('.alert_no_secure_connection')
       .show();
-  } else {
-    // Fallback for when bootstrap is not loaded
-    alert('For security reasons, location will not be retreived over an insecure connection');
   }
 };
