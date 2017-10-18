@@ -132,7 +132,9 @@
       {# Leaflet Scripts #}
     {% block map_leaflet_scripts %}
       <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet.geometryutil/dist/leaflet.geometryutil.js') }}"></script>
       <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet.wms/dist/leaflet.wms.js') }}"></script>
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/Leaflet.Snap/leaflet.snap.js') }}"></script>
     {% endblock %}
 
       {# Init Map #}
@@ -144,10 +146,18 @@
             formId: '{{ id }}',
             defaults: {{ defaults|json_encode|raw }},
             fields: {{ fields|json_encode|raw }},
-            baseLayer: {{ base_layer|json_encode|raw }},
+            baseLayers: {{ base_layers|json_encode|raw }},
             overlays: {{ overlays|json_encode|raw }}
           }
         );
+
+        $(document).ready(function() {
+          $('.leaflet-control-layers').find('input').each(function(index, elem) {
+            $(elem).on('ifClicked', function(e) {
+              elem.click();
+            });
+          });
+        })
       </script>
     {% endblock %}
 
