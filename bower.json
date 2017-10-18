@@ -18,6 +18,9 @@
     "tests"
   ],
   "devDependencies": {
-    "leaflet": "^1.2.0"
+    "leaflet": "^1.2.0",
+    "leaflet.wms": "^0.2.0",
+    "Leaflet.Snap": "makinacorpus/Leaflet.Snap#^0.4.0",
+    "leaflet.geometryutil": "makinacorpus/leaflet.geometryutil#^0.4.0"
   }
 }

@@ -10,13 +10,18 @@ develop | [![Build Status](https://travis-ci.org/CuriousInc/MapFormTypeBundle.sv
 
 ## Installation
 
-#### 1) Install the Bundle
+#### 1) Install Prerequisites
+Make sure bootstrap styles and scripts are included.
+
+__Note:__ when using bootstrap _v4_, make sure glyphicons are included too. 
+
+#### 2) Install the Bundle
 Install the bundle using composer:
 ```bash
 composer require curious-inc/map-form-type-bundle
 ```
 
-#### 2) Enable the Bundle
+#### 3) Enable the Bundle
 Register the bundle in `app/AppKernel.php` to enable it:
 ```php
 // app/AppKernel.php
@@ -38,14 +43,13 @@ class AppKernel extends Kernel
 }
 ```
 
-#### 3) Configure the Bundle
+#### 4) Configure the Bundle
 Add the following configuration to `app/config/config.yml` and change it to needs or wishes accordingly:
 ```yaml
-curious_inc_map_form_type:
-    example:              ~
+curious_inc_map_form_type: ~
 ```
 
-#### 4) Configure the MapType template
+#### 5) Configure the MapType template
 Add the MapType template to `app/config/config.yml` under twig, like so:
 ```yaml
 # Twig Configuration

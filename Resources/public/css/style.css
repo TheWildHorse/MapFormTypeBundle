@@ -21,6 +21,10 @@
 	color: white;
 }
 
+.map-type .modal-header h4.default {
+	color: #444;
+}
+
 .map-type .modal .modal-header h4 span {
 	float: left;
 }

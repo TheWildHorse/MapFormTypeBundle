@@ -82,6 +82,10 @@
         <source>message.location_service.alert_no_secure_connection</source>
         <target>Locatiediensten kunnen enkel lokaal gebruikt worden of over een beveiligde verbinding met HTTPS.</target>
       </trans-unit>
+      <trans-unit id="message.map.base_layer.not_set">
+        <source>message.map.base_layer.not_set</source>
+        <target>Er is op deze pagina geen basislaag voor de kaart ingesteld.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

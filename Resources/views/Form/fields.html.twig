@@ -57,33 +57,6 @@
 
     {% endblock %}
 
-    {# Scripts #}
-    {% block map_scripts %}
-
-      {# Leaflet Scripts #}
-    {% block map_leaflet_scripts %}
-      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
-    {% endblock %}
-
-      {# Init Map #}
-      <script src="{{ asset('bundles/curiousincmapformtype/js/leaflet-embed.js') }}"></script>
-      <script>
-        var $mapView = new CuriousMap(
-          {
-            latitude: {{ defaults.latitude }},
-            longitude: {{ defaults.longitude }},
-            zoom: {{ defaults.zoom }},
-            formId: '{{ id }}',
-            mapId: '{{ id }}_map',
-            latId: '{{ id }}_latitude',
-            longId: '{{ id }}_longitude',
-            snapButtonId: '{{ id }}_location_snap',
-            fields: {{ fields|json_encode|raw }},
-          }
-        );
-      </script>
-    {% endblock %}
-
     {# Bootstrap Modal #}
     {% block map_modal %}
       <!-- Modal -->
@@ -133,6 +106,9 @@
               <p class="message alert_no_secure_connection">
                 {{ 'message.location_service.alert_no_secure_connection'|trans({}, 'CuriousIncMapFormTypeBundle') }}
               </p>
+              <p class="message alert_no_base_layer">
+                {{ 'message.map.base_layer.not_set'|trans({}, 'CuriousIncMapFormTypeBundle') }}
+              </p>
             </div>
 
             {# Modal Footer #}
@@ -148,6 +124,41 @@
         </div>
       </div>
       <!-- End modal -->
+    {% endblock %}
+
+    {# Scripts #}
+    {% block map_scripts %}
+
+      {# Leaflet Scripts #}
+    {% block map_leaflet_scripts %}
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet/dist/leaflet.js') }}"></script>
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet.geometryutil/dist/leaflet.geometryutil.js') }}"></script>
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/leaflet.wms/dist/leaflet.wms.js') }}"></script>
+      <script src="{{ asset('bundles/curiousincmapformtype/vendor/Leaflet.Snap/leaflet.snap.js') }}"></script>
+    {% endblock %}
+
+      {# Init Map #}
+      <script src="{{ asset('bundles/curiousincmapformtype/js/leaflet-embed.js') }}"></script>
+      <script>
+        var mapView = mapView || {};
+        mapView['{{ id }}'] = new CuriousMap(
+          {
+            formId: '{{ id }}',
+            defaults: {{ defaults|json_encode|raw }},
+            fields: {{ fields|json_encode|raw }},
+            baseLayers: {{ base_layers|json_encode|raw }},
+            overlays: {{ overlays|json_encode|raw }}
+          }
+        );
+
+        $(document).ready(function() {
+          $('.leaflet-control-layers').find('input').each(function(index, elem) {
+            $(elem).on('ifClicked', function(e) {
+              elem.click();
+            });
+          });
+        })
+      </script>
     {% endblock %}
 
   </div>

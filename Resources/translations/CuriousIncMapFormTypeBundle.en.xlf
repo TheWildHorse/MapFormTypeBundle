@@ -82,6 +82,10 @@
         <source>message.location_service.alert_no_secure_connection</source>
         <target>Location services can only be used locally or on a secured connection over https.</target>
       </trans-unit>
+      <trans-unit id="message.map.base_layer.not_set">
+        <source>message.map.base_layer.not_set</source>
+        <target>No base layer has been configured for the map on this page.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
