@@ -15,7 +15,7 @@ var CuriousMap = function (options) {
 
   // Set defaults
   this.lat = options.defaults.latitude;
-  this.long = options.defaults.longitude;
+  this.lng = options.defaults.longitude;
   this.zoom = options.defaults.zoom;
 
   // Initialise
@@ -61,6 +61,9 @@ CuriousMap.prototype.initialiseFormFields = function (fields) {
     options.$field = $(`#${$this.formId}_${options.name}`);
     $this.fields[name] = options;
   });
+
+  if (this.fields.latitude) this.lat = this.fields.latitude.$field.val() || this.lat;
+  if (this.fields.longitude) this.lng = this.fields.longitude.$field.val() || this.lng;
 };
 
 /*
@@ -71,7 +74,7 @@ CuriousMap.prototype.initialiseMapElements = function (options) {
   this.$mapControl.addTo(this.$map);
 
   // Set view
-  this.$map.setView(new L.LatLng(this.lat, this.long), this.zoom);
+  this.$map.setView(new L.LatLng(this.lat, this.lng), this.zoom);
 
   // Set the initial marker
   this.initiateMarker();
@@ -119,7 +122,7 @@ CuriousMap.prototype.initialiseTriggers = function () {
 CuriousMap.prototype.updateLocation = function (position) {
   // Set latitude and longitude from given position
   this.lat = position.lat;
-  this.long = position.lng;
+  this.lng = position.lng;
 
   // Update all linked elements according to newly set coordinates
   this.$marker.setLatLng(position, { draggable: 'true' });
@@ -140,48 +143,30 @@ CuriousMap.prototype.updateFormFields = function (position) {
 
   $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
     // Update the values that are always present
-    $this.fields.latitude.$field.val(position.lat);
-    $this.fields.longitude.$field.val(position.lng);
+    if(data) {
+      $this.fields.latitude.$field.val(data.lat || position.lat);
+      $this.fields.longitude.$field.val(data.lon || position.lng);
 
-    // Update additional address data
-    if (data.length !== 0 && typeof data.address !== 'undefined') {
+      // Process address information
+      if (data.address) {
+        var houseNumber = data.address.house_number || '';
+        var street = data.address.footway || data.address.road || '';
+        var postCode = data.address.postcode || '';
+        var city = data.address.village || data.address.town || data.address.city || '';
+        var district = data.address.residential || data.address.industrial || data.address.district || data.address.suburb || '';
+        var neighbourhood = data.address.neighbourhood || '';
+        var state = data.address.province || data.address.state || '';
+        var country = data.address.country || '';
 
-      // Populate the actual fields
-      if ($this.fields.address !== undefined) {
-        $this.fields.address.$field.val(data.display_name);
-      }
-      if ($this.fields.street !== undefined) {
-        $this.fields.street.$field.val(data.address.road);
-      }
-      if ($this.fields.postal_code !== undefined) {
-        $this.fields.postal_code.$field.val(data.address.postcode);
-      }
-      if ($this.fields.city !== undefined) {
-        var city = data.address.city;
-        if (typeof data.address.town !== 'undefined') {
-          city = data.address.town;
-        } else if (typeof data.address.village !== 'undefined') {
-          city = data.address.village;
-        }
-        $this.fields.city.$field.val(city);
-      }
-      if ($this.fields.city_district !== undefined) {
-        var district = data.address.suburb;
-        if (typeof data.address.residential !== 'undefined') {
-          district = data.address.residential;
-        } else if (typeof data.address.industrial !== 'undefined') {
-          district = data.address.industrial;
-        }
-        $this.fields.city_district.$field.val(district);
-      }
-      if ($this.fields.city_neighbourhood !== undefined) {
-        $this.fields.city_neighbourhood.$field.val(data.address.neighbourhood);
-      }
-      if ($this.fields.state !== undefined) {
-        $this.fields.state.$field.val(data.address.state);
-      }
-      if ($this.fields.country !== undefined) {
-        $this.fields.country.$field.val(data.address.country);
+        // Populate input fields if configured
+        if ($this.fields.address) $this.fields.address.$field.val(street + ' ' + houseNumber + ', ' + city);
+        if ($this.fields.street) $this.fields.street.$field.val(street);
+        if ($this.fields.postal_code) $this.fields.postal_code.$field.val(postCode);
+        if ($this.fields.city) $this.fields.city.$field.val(city);
+        if ($this.fields.city_district) $this.fields.city_district.$field.val(district);
+        if ($this.fields.city_neighbourhood) $this.fields.city_neighbourhood.$field.val(neighbourhood);
+        if ($this.fields.state) $this.fields.state.$field.val(state);
+        if ($this.fields.country) $this.fields.country.$field.val(country);
       }
     }
   });
@@ -447,7 +432,7 @@ CuriousMap.prototype.addMapControl = function (control) {
  * Update the marker according to current latitude and longitude
  */
 CuriousMap.prototype.initiateMarker = function () {
-  this.$marker = L.marker([this.lat, this.long], { draggable: 'true' }).addTo(this.$map);
+  this.$marker = L.marker([this.lat, this.lng], { draggable: 'true' }).addTo(this.$map);
   this.$marker.snapediting = new L.Handler.MarkerSnap(this.$map, this.$marker);
 };
 
