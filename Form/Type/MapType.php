@@ -53,20 +53,19 @@ class MapType extends AbstractType
                     'longitude' => [],
                     'latitude'  => [],
                 ],
-                'mapDimensions'     => [
+                'mapDimensions'      => [
                     'width'  => '100%',
                     'height' => '400px',
                 ],
-                'baseLayers'         => [
-                    [
-                        'group'       => 'OpenStreetMaps',
-                        'type'        => 'TileLayer',
-                        'url'         => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        'attribution' => 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
-                        'minZoom'     => 1,
-                        'maxZoom'     => 20,
-                    ]
+                'fallbackLayer'      => [
+                    'group'       => 'OpenStreetMaps',
+                    'type'        => 'TileLayer',
+                    'url'         => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    'attribution' => 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+                    'minZoom'     => 1,
+                    'maxZoom'     => 20,
                 ],
+                'baseLayers'         => [],
                 'overlays'           => [],
                 'translation_domain' => 'CuriousIncMapFormTypeBundle',
             ]
@@ -105,7 +104,8 @@ class MapType extends AbstractType
         $view->vars['defaults']       = $options['defaults'];
         $view->vars['fields']         = $options['fields'];
         $view->vars['map_dimensions'] = $options['mapDimensions'];
-        $view->vars['base_layers']     = $options['baseLayers'];
+        $view->vars['fallback_layer'] = $options['fallbackLayer'];
+        $view->vars['base_layers']    = $options['baseLayers'];
         $view->vars['overlays']       = $options['overlays'];
     }
 }

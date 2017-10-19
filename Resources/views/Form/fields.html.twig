@@ -146,6 +146,7 @@
             formId: '{{ id }}',
             defaults: {{ defaults|json_encode|raw }},
             fields: {{ fields|json_encode|raw }},
+            fallbackLayer: {{ fallback_layer|json_encode|raw }},
             baseLayers: {{ base_layers|json_encode|raw }},
             overlays: {{ overlays|json_encode|raw }}
           }
