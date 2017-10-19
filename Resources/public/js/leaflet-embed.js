@@ -154,14 +154,14 @@ CuriousMap.prototype.updateFormFields = function (position) {
         var houseNumber = data.address.house_number || '';
         var street = data.address.footway || data.address.road || '';
         var postCode = data.address.postcode || '';
-        var city = data.address.village || data.address.town || data.address.city || '';
-        var district = data.address.residential || data.address.industrial || data.address.district || data.address.suburb || '';
-        var neighbourhood = data.address.neighbourhood || '';
+        var city = data.address.city || data.address.suburb || '';
+        var district = data.address.city ? data.address.suburb || '' : data.address.district || '';
+        var neighbourhood = data.address.neighbourhood || data.address.residential || data.address.industrial || '';
         var state = data.address.province || data.address.state || '';
         var country = data.address.country || '';
 
         // Populate input fields if configured
-        if ($this.fields.address) $this.fields.address.$field.val(street + ' ' + houseNumber + ', ' + city);
+        if ($this.fields.address) $this.fields.address.$field.val($.trim(street + ' ' + houseNumber) + (street.length ? ', ' : '') + city);
         if ($this.fields.street) $this.fields.street.$field.val(street);
         if ($this.fields.postal_code) $this.fields.postal_code.$field.val(postCode);
         if ($this.fields.city) $this.fields.city.$field.val(city);
