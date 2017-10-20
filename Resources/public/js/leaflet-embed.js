@@ -80,6 +80,8 @@ CuriousMap.prototype.initialiseMapElements = function (options) {
   this.initiateMarker();
 
   // Add all layers
+  this.baseLayers = [];
+  this.initialiseFallbackLayer(options.fallbackLayer);
   this.initialiseBaseLayers(options.baseLayers);
   this.initialiseOverlays(options.overlays);
 };
@@ -143,7 +145,7 @@ CuriousMap.prototype.updateFormFields = function (position) {
 
   $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
     // Update the values that are always present
-    if(data) {
+    if (data) {
       $this.fields.latitude.$field.val(data.lat || position.lat);
       $this.fields.longitude.$field.val(data.lon || position.lng);
 
@@ -209,6 +211,19 @@ CuriousMap.prototype.updateGeoJsonLayers = function () {
 };
 
 /**
+ * Update mapControl, only display when any layers are listed
+ */
+CuriousMap.prototype.updateMapControl = function () {
+  if (this.$mapControl._layers.length >= 1) {
+    // Add the control to the map
+    this.$mapControl.addTo(this.$map);
+  } else {
+    // Remove the control from the map
+    this.$mapControl.remove();
+  }
+};
+
+/**
  * Clear all associated form fields
  */
 CuriousMap.prototype.clearFormFields = function () {
@@ -216,6 +231,17 @@ CuriousMap.prototype.clearFormFields = function () {
 
   $.each($this.fields, function (name, field) {
     field.$field.val('');
+  });
+};
+
+/**
+ * Remove all baseLayers, except layers that are marked as fallback layers
+ */
+CuriousMap.prototype.clearBaseLayers = function () {
+  var $this = this;
+
+  $.each(this.baseLayers, function (index, baseLayer) {
+    $this.$map.removeLayer(baseLayer);
   });
 };
 
@@ -229,38 +255,35 @@ CuriousMap.prototype.addBaseLayer = function (layerDefinition) {
     // Do not process layer without url
   } else if (layerDefinition.type === 'TileLayer') {
     layer = this.createTileLayer(layerDefinition);
+  } else if (layerDefinition.type === 'WmsLayer') {
+    layer = this.createWmsLayer(layerDefinition);
   } else {
     // Do not process unknown layerType
   }
 
   // Add layer to the map, if any
   if (layer !== undefined) {
-    this.addBaseLayerToControl(layerDefinition.group, layer);
-    this.$map.addLayer(layer);
+    // Remove current baseLayers
+    this.clearBaseLayers();
+    // Add layer to the map
+    this.addLayerToMap(layer);
+
+    // Unless it is a fallback layer
+    if (!layerDefinition.fallback) {
+      // Add baseLayer to currently loaded baseLayers
+      this.baseLayers.push(layer);
+      // Add baseLayer to control
+      this.addBaseLayerToControl(layer, layerDefinition.name);
+    }
   }
 
   // Return the layer if any
   return layer;
 };
 
-/**
- * Add a layer to a group in the map control
- */
-CuriousMap.prototype.addBaseLayerToControl = function (groupName, layer) {
-  var baseLayerLabel = '<span class="base-layer-label">%s</span>';
-
-  // Do not modify map control without groupName or layer to add.
-  if (groupName === undefined || layer === undefined) {
-    return;
-  }
-
-  // Update map control: Remove the modified group and then re-add
-  this.$mapControl.removeLayer(layer);
-  this.$mapControl.addBaseLayer(layer, baseLayerLabel.replace('%s', groupName));
-};
-
 CuriousMap.prototype.addOverlay = function (layerDefinition) {
   var layer;
+  var layerGroup;
 
   if (layerDefinition.url === undefined) {
     // Do not process layer without url
@@ -280,35 +303,94 @@ CuriousMap.prototype.addOverlay = function (layerDefinition) {
     if (layerDefinition.snapping) {
       this.enableSnappingForLayer(layer);
     }
-    // Add the layer to mapControl and to the map
-    this.addOverlayToGroupInControl(layerDefinition.group, layer);
-    this.$map.addLayer(layer);
+
+    // Put layer in a group, even if it is the only one of its kind
+    layerGroup = this.addLayerToGroup(layer, layerDefinition);
+
+    // Add that group to the map and mapControl (if one of its layers is enabled)
+    if (layerGroup.enabled) {
+      this.addLayerToMap(layerGroup);
+    }
+
+    // Always add the group to mapControl
+    this.addOverlayToControl(layerGroup, layerDefinition.name);
   }
 
   return layer;
 };
 
 /**
- * Add overlay layers to $mapControl grouped by groupName
+ * Add a layer to a group, depending on its name
+ *
+ * Note: This works for any layer but only makes sense for overlay layers
  */
-CuriousMap.prototype.addOverlayToGroupInControl = function (groupName, layer) {
-  var overlayLabel = '<span class="overlay-label">%s</span>';
+CuriousMap.prototype.addLayerToGroup = function (layer, layerDefinition) {
+  var groupName = layerDefinition.name;
+  var enabled = layerDefinition.enabled || false;
 
-  // Do not modify map control without groupName or layer to add.
-  if (groupName === undefined || layer === undefined) {
+  // Do not continue without a name for the group or the layer itself
+  if (groupName === undefined && layer === undefined) {
+    return undefined;
+  }
+
+  // Add layer to group according to its name
+  if (Object.prototype.hasOwnProperty.call(this.overlayGroups, groupName)) {
+    this.overlayGroups[groupName].addLayer(layer);
+  } else {
+    this.overlayGroups[groupName] = new L.LayerGroup([layer]);
+  }
+
+  // Enable layerGroup if one of its layers is configured to be enabled
+  if (!Object.prototype.hasOwnProperty.call(this.overlayGroups[groupName], 'enabled')) {
+    this.overlayGroups[groupName].enabled = enabled;
+  } else {
+    this.overlayGroups[groupName].enabled = this.overlayGroups[groupName].enabled || enabled;
+  }
+
+  // Return the (re)created group
+  return this.overlayGroups[groupName];
+};
+
+/**
+ * Add the layer or layerGroup to the map, after removing it
+ */
+CuriousMap.prototype.addLayerToMap = function (layer) {
+  // in case of a group, remove the old one
+  this.$map.removeLayer(layer);
+  // Add the new layer or group
+  layer.addTo(this.$map);
+};
+
+/**
+ * Add a layer to a group in the map control
+ */
+CuriousMap.prototype.addBaseLayerToControl = function (layer, labelName) {
+  var baseLayerLabel = '<span class="base-layer-label">%s</span>';
+
+  // Do not modify map control without labelName or layer to add.
+  if (labelName === undefined || layer === undefined) {
     return;
   }
 
-  // Add layer to group according to its groupName
-  if (Object.prototype.hasOwnProperty.call(this.baseLayerGroups, groupName)) {
-    this.baseLayerGroups[groupName].addLayer(layer);
-  } else {
-    this.baseLayerGroups[groupName] = new L.LayerGroup([layer]);
+  // Update map control: Remove the modified group and then re-add
+  this.$mapControl.removeLayer(layer);
+  this.$mapControl.addBaseLayer(layer, baseLayerLabel.replace('%s', labelName));
+};
+
+/**
+ * Add overlay layer or overlay layerGroup to $mapControl
+ */
+CuriousMap.prototype.addOverlayToControl = function (layer, label) {
+  var overlayLabel = '<span class="overlay-label">%s</span>';
+
+  // Do not modify map control without labelName or layer to add.
+  if (label === undefined || layer === undefined) {
+    return;
   }
 
   // Add the layer in its group, after removing the old group if it exists
-  this.$mapControl.removeLayer(this.baseLayerGroups[groupName]);
-  this.$mapControl.addOverlay(this.baseLayerGroups[groupName], overlayLabel.replace('%s', groupName));
+  this.$mapControl.removeLayer(layer);
+  this.$mapControl.addOverlay(layer, overlayLabel.replace('%s', label));
 };
 
 /**
@@ -381,8 +463,6 @@ CuriousMap.prototype.createGeoJsonLayer = function (settings) {
 CuriousMap.prototype.initialiseBaseLayers = function (layerDefinitions) {
   var $this = this;
 
-  this.baseLayerGroups = {};
-
   // Go through each layerDefinition
   $.each(layerDefinitions, function (index, layerDefinition) {
     if (layerDefinition.url === undefined || layerDefinition.type === undefined) {
@@ -400,6 +480,8 @@ CuriousMap.prototype.initialiseBaseLayers = function (layerDefinitions) {
       $this.addBaseLayer(layerDefinition);
     }
   });
+
+  this.updateMapControl();
 };
 
 /**
@@ -415,6 +497,27 @@ CuriousMap.prototype.initialiseOverlays = function (layerDefinitions) {
       $this.addOverlay(layerDefinition);
     }
   });
+
+  this.updateMapControl();
+};
+
+/**
+ * Add layer under every other layer as a fallback
+ *
+ * This method is executed before adding baseLayers and will
+ * add the fallback property, so it doesn't get listed in the mapControl
+ */
+CuriousMap.prototype.initialiseFallbackLayer = function (layerDefinition) {
+  var fallbackDefinition = layerDefinition;
+
+  // Do not produce a fallback layer if definition is empty or incomplete
+  if (fallbackDefinition.url === undefined || fallbackDefinition.type === undefined) {
+    return;
+  }
+
+  fallbackDefinition.fallback = true;
+
+  this.addBaseLayer(fallbackDefinition);
 };
 
 /**
@@ -481,7 +584,7 @@ CuriousMap.prototype.determineZoomLevel = function (type) {
 };
 
 /**
- * Focus CuriousMap by focusing it's searchField, if any
+ * Focus CuriousMap by focusing the searchField, if it is defined
  */
 CuriousMap.prototype.focus = function () {
   if (this.$searchField) this.$searchField.focus();
