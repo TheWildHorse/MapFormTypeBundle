@@ -273,7 +273,7 @@ CuriousMap.prototype.addBaseLayer = function (layerDefinition) {
       // Add baseLayer to currently loaded baseLayers
       this.baseLayers.push(layer);
       // Add baseLayer to control
-      this.addBaseLayerToControl(layer, layerDefinition.group);
+      this.addBaseLayerToControl(layer, layerDefinition.name);
     }
   }
 
@@ -313,26 +313,27 @@ CuriousMap.prototype.addOverlay = function (layerDefinition) {
     }
 
     // Always add the group to mapControl
-    this.addOverlayToControl(layerGroup, layerDefinition.group);
+    this.addOverlayToControl(layerGroup, layerDefinition.name);
   }
 
   return layer;
 };
 
 /**
- * Add a layer to a group, depending on its groupName
+ * Add a layer to a group, depending on its name
  *
  * Note: This works for any layer but only makes sense for overlay layers
  */
 CuriousMap.prototype.addLayerToGroup = function (layer, layerDefinition) {
-  var groupName = layerDefinition.group;
+  var groupName = layerDefinition.name;
   var enabled = layerDefinition.enabled || false;
-  // Do not continue without groupName or layer to add
+
+  // Do not continue without a name for the group or the layer itself
   if (groupName === undefined && layer === undefined) {
     return undefined;
   }
 
-  // Add layer to group according to its groupName
+  // Add layer to group according to its name
   if (Object.prototype.hasOwnProperty.call(this.overlayGroups, groupName)) {
     this.overlayGroups[groupName].addLayer(layer);
   } else {
@@ -379,17 +380,17 @@ CuriousMap.prototype.addBaseLayerToControl = function (layer, labelName) {
 /**
  * Add overlay layer or overlay layerGroup to $mapControl
  */
-CuriousMap.prototype.addOverlayToControl = function (layer, labelName) {
+CuriousMap.prototype.addOverlayToControl = function (layer, label) {
   var overlayLabel = '<span class="overlay-label">%s</span>';
 
   // Do not modify map control without labelName or layer to add.
-  if (labelName === undefined || layer === undefined) {
+  if (label === undefined || layer === undefined) {
     return;
   }
 
   // Add the layer in its group, after removing the old group if it exists
   this.$mapControl.removeLayer(layer);
-  this.$mapControl.addOverlay(layer, overlayLabel.replace('%s', labelName));
+  this.$mapControl.addOverlay(layer, overlayLabel.replace('%s', label));
 };
 
 /**
