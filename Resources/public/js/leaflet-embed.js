@@ -148,13 +148,15 @@ CuriousMap.prototype.updateFormFields = function (position) {
 
   this.clearFormFields();
 
-  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
-    // Update the values that are always present
-    if (data) {
-      $this.fields.latitude.$field.val(data.lat || position.lat);
-      $this.fields.longitude.$field.val(data.lon || position.lng);
+  // Update latitude and longitude with map coordinates
+  $this.fields.latitude.$field.val(position.lat);
+  $this.fields.longitude.$field.val(position.lng);
 
-      // Process address information
+  // Perform reverse address lookup
+  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
+
+    // Process address information
+    if (data) {
       if (data.address) {
         var houseNumber = data.address.house_number || '';
         var street = data.address.footway || data.address.road || '';
