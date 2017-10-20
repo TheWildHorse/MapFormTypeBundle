@@ -154,9 +154,9 @@ CuriousMap.prototype.updateFormFields = function (position) {
 
   // Perform reverse address lookup
   $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
-    if (data) {
 
-      // Process address information
+    // Process address information
+    if (data) {
       if (data.address) {
         var houseNumber = data.address.house_number || '';
         var street = data.address.footway || data.address.road || '';
