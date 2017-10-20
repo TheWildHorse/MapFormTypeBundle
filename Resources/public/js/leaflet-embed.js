@@ -99,6 +99,11 @@ CuriousMap.prototype.initialiseTriggers = function () {
     });
   }
 
+  // Clicking on the map canvas
+  this.$map.on('click', function (e) {
+    $this.updateLocation(e.latlng);
+  });
+
   // Dropping the marker somewhere on the map
   this.$marker.on('dragend', function () {
     $this.updateLocation(this.getLatLng());
@@ -443,7 +448,10 @@ CuriousMap.prototype.createGeoJsonLayer = function (settings) {
     pointToLayer: function (feature, location) {
       return L
         .circleMarker(location, $this.geoJsonMarkerStyle)
-        .bindPopup(JSON.stringify(feature, location));
+        .on('click', function () {
+          // Update location of the main pointer to the center of this feature
+          $this.updateLocation(this._latlng);
+        });
     }
   });
 
