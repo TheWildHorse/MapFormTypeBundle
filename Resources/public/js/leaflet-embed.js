@@ -148,11 +148,13 @@ CuriousMap.prototype.updateFormFields = function (position) {
 
   this.clearFormFields();
 
+  // Update latitude and longitude with map coordinates
+  $this.fields.latitude.$field.val(position.lat);
+  $this.fields.longitude.$field.val(position.lng);
+
+  // Perform reverse address lookup
   $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
-    // Update the values that are always present
     if (data) {
-      $this.fields.latitude.$field.val(data.lat || position.lat);
-      $this.fields.longitude.$field.val(data.lon || position.lng);
 
       // Process address information
       if (data.address) {
