@@ -161,7 +161,7 @@ CuriousMap.prototype.updateFormFields = function (position) {
         var country = data.address.country || '';
 
         // Populate input fields if configured
-        if ($this.fields.address) $this.fields.address.$field.val($.trim(street + ' ' + houseNumber) + (street.length ? ', ' : '') + city);
+        if ($this.fields.address) $this.fields.address.$field.val($this.parseAddress(city, street, houseNumber));
         if ($this.fields.street) $this.fields.street.$field.val(street);
         if ($this.fields.postal_code) $this.fields.postal_code.$field.val(postCode);
         if ($this.fields.city) $this.fields.city.$field.val(city);
@@ -613,4 +613,23 @@ CuriousMap.prototype.snapToLocation = function () {
       .find('.alert_no_secure_connection')
       .show();
   }
+};
+
+/**
+ * Format the address
+ * We want either the city,
+ * or street (houseNumber if available), city
+ */
+CuriousMap.prototype.parseAddress = function (city, street, houseNumber) {
+  if (street.length && city.length) {
+    city = ', ' + city;
+  }
+
+  if (street.length && houseNumber.length) {
+    houseNumber = ' ' + houseNumber;
+  } else if (!street.length && houseNumber.length) {
+    houseNumber = '';
+  }
+
+  return street + houseNumber + city;
 };
