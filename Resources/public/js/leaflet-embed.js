@@ -180,34 +180,54 @@ CuriousMap.prototype.updateFormFields = function (position) {
 CuriousMap.prototype.updateGeoJsonLayers = function () {
   var $this = this;
 
-  var bbox = $this.$map.getBounds().toBBoxString();
+  if (this.$map.getZoom() < 15) {
+    // Hide layer
+    $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
+      geoJsonLayerObject.layer.setStyle(
+        {
+          opacity: 0,
+          fillOpacity: 0
+        });
+    });
 
-  // Generate url to fetch GeoJson objects
-  var generateUrl = function (settings) {
-    var parameters = Object.assign(
-      { bbox: bbox },
-      settings.parameters
-    );
+  } else {
+    // Make layer visible again
+    $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
+      geoJsonLayerObject.layer.setStyle(
+        {
+          opacity: 1,
+          fillOpacity: 0.8
+        });
+    });
 
-    return settings.url + L.Util.getParamString(parameters);
-  };
+    var bbox = $this.$map.getBounds().toBBoxString();
+    // Generate url to fetch GeoJson objects
+    var generateUrl = function(settings) {
+      var parameters = Object.assign(
+        {bbox: bbox},
+        settings.parameters
+      );
 
-  // Go through each GeoJsonLayer Object
-  $.each(this.geoJsonLayerObjects, function (index, geoJsonLayerObject) {
-    // Update the layer within the object with new GeoJson data, if any
-    var url = generateUrl(geoJsonLayerObject.settings);
-    if (url) {
-      $.ajax({
-        jsonp: true,
-        url: url,
-        dataType: 'json',
-        jsonpCallback: 'getJson',
-        success: function (data) {
-          geoJsonLayerObject.layer.addData(data);
-        }
-      });
-    }
-  });
+      return settings.url + L.Util.getParamString(parameters);
+    };
+
+    // Go through each GeoJsonLayer Object
+    $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
+      // Update the layer within the object with new GeoJson data, if any
+      var url = generateUrl(geoJsonLayerObject.settings);
+      if (url) {
+        $.ajax({
+          jsonp: true,
+          url: url,
+          dataType: 'json',
+          jsonpCallback: 'getJson',
+          success: function(data) {
+            geoJsonLayerObject.layer.addData(data);
+          }
+        });
+      }
+    });
+  }
 };
 
 /**
