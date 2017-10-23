@@ -32,7 +32,7 @@ CuriousMap.prototype.initialise = function (options) {
   // Initialise CuriousMap FormType
   this.initialiseSearchFields();
   this.initialiseFormFields(options.fields);
-  this.initialiseMapElements(options)
+  this.initialiseMapElements(options);
   this.initialiseTriggers();
   this.focus();
 };
@@ -102,6 +102,11 @@ CuriousMap.prototype.initialiseTriggers = function () {
   // Dropping the marker somewhere on the map
   this.$marker.on('dragend', function () {
     $this.updateLocation(this.getLatLng());
+  });
+
+  //Ending a map zoom action
+  this.$map.on('zoomend', function() {
+    $this.updateGeoJsonLayers();
   });
 
   // Enter in searchField
@@ -180,54 +185,52 @@ CuriousMap.prototype.updateFormFields = function (position) {
 CuriousMap.prototype.updateGeoJsonLayers = function () {
   var $this = this;
 
-  if (this.$map.getZoom() < 15) {
     // Hide layer
     $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
-      geoJsonLayerObject.layer.setStyle(
-        {
-          opacity: 0,
-          fillOpacity: 0
-        });
-    });
+      var currentZoomLevel = $this.$map.getZoom();
+      if (currentZoomLevel >= geoJsonLayerObject.settings.minZoom &&
+        currentZoomLevel <= geoJsonLayerObject.settings.maxZoom) {
+        geoJsonLayerObject.layer.setStyle(
+          {
+            opacity: 1,
+            fillOpacity: 0.8
+          });
 
-  } else {
-    // Make layer visible again
-    $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
-      geoJsonLayerObject.layer.setStyle(
-        {
-          opacity: 1,
-          fillOpacity: 0.8
-        });
-    });
+        var bbox = $this.$map.getBounds().toBBoxString();
+        // Generate url to fetch GeoJson objects
+        var generateUrl = function(settings) {
+          var parameters = Object.assign(
+            {bbox: bbox},
+            settings.parameters
+          );
 
-    var bbox = $this.$map.getBounds().toBBoxString();
-    // Generate url to fetch GeoJson objects
-    var generateUrl = function(settings) {
-      var parameters = Object.assign(
-        {bbox: bbox},
-        settings.parameters
-      );
+          return settings.url + L.Util.getParamString(parameters);
+        };
 
-      return settings.url + L.Util.getParamString(parameters);
-    };
-
-    // Go through each GeoJsonLayer Object
-    $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
-      // Update the layer within the object with new GeoJson data, if any
-      var url = generateUrl(geoJsonLayerObject.settings);
-      if (url) {
-        $.ajax({
-          jsonp: true,
-          url: url,
-          dataType: 'json',
-          jsonpCallback: 'getJson',
-          success: function(data) {
-            geoJsonLayerObject.layer.addData(data);
+        // Go through each GeoJsonLayer Object
+        $.each($this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
+          // Update the layer within the object with new GeoJson data, if any
+          var url = generateUrl(geoJsonLayerObject.settings);
+          if (url) {
+            $.ajax({
+              jsonp: true,
+              url: url,
+              dataType: 'json',
+              jsonpCallback: 'getJson',
+              success: function(data) {
+                geoJsonLayerObject.layer.addData(data);
+              }
+            });
           }
         });
+      } else {
+        geoJsonLayerObject.layer.setStyle(
+          {
+            opacity: 0,
+            fillOpacity: 0
+          });
       }
     });
-  }
 };
 
 /**
