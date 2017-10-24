@@ -203,7 +203,7 @@ CuriousMap.prototype.updateGeoJsonLayers = function () {
     return settings.url + L.Util.getParamString(parameters);
   };
 
-  // Hide layer
+  // Show or hide layer based on min and max zoom level settings per layer
   $.each(this.geoJsonLayerObjects, function(index, geoJsonLayerObject) {
     if (currentZoomLevel >= geoJsonLayerObject.settings.minZoom &&
       currentZoomLevel <= geoJsonLayerObject.settings.maxZoom) {
