@@ -210,7 +210,7 @@ CuriousMap.prototype.updateGeoJsonLayers = function () {
       && currentZoomLevel <= geoJsonLayerObject.settings.maxZoom
     ) {
       // Show layer based on min and max zoom level settings per layer
-      geoJsonLayerObject.layer.setStyle({ visibility: 'visible' });
+      geoJsonLayerObject.layer.setStyle({ opacity: 1, fillOpacity: 0.8 });
 
       // Update the layer within the object with new GeoJson data, if any
       var url = generateUrl(geoJsonLayerObject.settings);
