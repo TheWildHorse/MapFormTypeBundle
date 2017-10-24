@@ -109,7 +109,7 @@ CuriousMap.prototype.initialiseTriggers = function () {
     $this.updateLocation(this.getLatLng());
   });
 
-  //Ending a map zoom action
+  // Ending a map zoom action
   this.$map.on('zoomend', function() {
     $this.updateGeoJsonLayers();
   });
