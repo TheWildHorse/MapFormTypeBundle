@@ -5,6 +5,21 @@
 	fill: #444;
 }
 
+/* Align labels for Leaflet Control */
+.map-type .base-layer-label {
+	vertical-align: middle;
+}
+
+.map-type .overlay-label {
+	font-weight: normal;
+	vertical-align: middle;
+}
+
+.map-type .leaflet-control-layers-list .icheckbox_square-blue,
+.map-type .leaflet-control-layers-list .iradio_square-blue {
+	margin: 1px 1px;
+}
+
 /* Modal window styling */
 .map-type .modal-header {
 	background-color: #f9f9f9;

@@ -99,6 +99,11 @@ CuriousMap.prototype.initialiseTriggers = function () {
     });
   }
 
+  // Clicking on the map canvas
+  this.$map.on('click', function (e) {
+    $this.updateLocation(e.latlng);
+  });
+
   // Dropping the marker somewhere on the map
   this.$marker.on('dragend', function () {
     $this.updateLocation(this.getLatLng());
@@ -148,13 +153,15 @@ CuriousMap.prototype.updateFormFields = function (position) {
 
   this.clearFormFields();
 
-  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
-    // Update the values that are always present
-    if (data) {
-      $this.fields.latitude.$field.val(data.lat || position.lat);
-      $this.fields.longitude.$field.val(data.lon || position.lng);
+  // Update latitude and longitude with map coordinates
+  $this.fields.latitude.$field.val(position.lat);
+  $this.fields.longitude.$field.val(position.lng);
 
-      // Process address information
+  // Perform reverse address lookup
+  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
+
+    // Process address information
+    if (data) {
       if (data.address) {
         var houseNumber = data.address.house_number || '';
         var street = data.address.footway || data.address.road || '';
@@ -166,7 +173,7 @@ CuriousMap.prototype.updateFormFields = function (position) {
         var country = data.address.country || '';
 
         // Populate input fields if configured
-        if ($this.fields.address) $this.fields.address.$field.val($.trim(street + ' ' + houseNumber) + (street.length ? ', ' : '') + city);
+        if ($this.fields.address) $this.fields.address.$field.val($this.parseAddress(city, street, houseNumber));
         if ($this.fields.street) $this.fields.street.$field.val(street);
         if ($this.fields.postal_code) $this.fields.postal_code.$field.val(postCode);
         if ($this.fields.city) $this.fields.city.$field.val(city);
@@ -462,7 +469,10 @@ CuriousMap.prototype.createGeoJsonLayer = function (settings) {
     pointToLayer: function (feature, location) {
       return L
         .circleMarker(location, $this.geoJsonMarkerStyle)
-        .bindPopup(JSON.stringify(feature, location));
+        .on('click', function () {
+          // Update location of the main pointer to the center of this feature
+          $this.updateLocation(this._latlng);
+        });
     }
   });
 
@@ -632,4 +642,23 @@ CuriousMap.prototype.snapToLocation = function () {
       .find('.alert_no_secure_connection')
       .show();
   }
+};
+
+/**
+ * Format the address
+ * We want either the city,
+ * or street (houseNumber if available), city
+ */
+CuriousMap.prototype.parseAddress = function (city, street, houseNumber) {
+  if (street.length && city.length) {
+    city = ', ' + city;
+  }
+
+  if (street.length && houseNumber.length) {
+    houseNumber = ' ' + houseNumber;
+  } else if (!street.length && houseNumber.length) {
+    houseNumber = '';
+  }
+
+  return street + houseNumber + city;
 };
