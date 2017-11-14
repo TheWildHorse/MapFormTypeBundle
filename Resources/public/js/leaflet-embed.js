@@ -422,7 +422,9 @@ CuriousMap.prototype.createTileLayer = function (settings) {
   return new L.TileLayer(
     settings.url,
     {
+      minNativeZoom: settings.minNativeZoom || 1,
       minZoom: settings.minZoom || 1,
+      maxNativeZoom: settings.maxNativeZoom || 18,
       maxZoom: settings.maxZoom || 20,
       attribution: settings.attribution || '',
       subdomains: settings.subdomains || 'abc'
@@ -439,7 +441,9 @@ CuriousMap.prototype.createWmsLayer = function (settings) {
     {
       layers: settings.layers.join(),
       format: settings.format || 'image/png',
-      transparent: settings.transparent || true
+      transparent: settings.transparent || true,
+      minZoom: settings.minZoom || 1,
+      maxZoom: settings.maxZoom || 20,
     }
   );
 };
@@ -448,6 +452,7 @@ CuriousMap.prototype.createWmsLayer = function (settings) {
  * Create and return a GeoJsonLayer, and register it for updating on location change
  */
 CuriousMap.prototype.createGeoJsonLayer = function (settings) {
+
   var $this = this;
 
   // Set style for circleMarkers if it has not been set

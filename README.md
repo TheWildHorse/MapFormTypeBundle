@@ -1,5 +1,9 @@
 # MapFormTypeBundle
-Generic Map FormType for Symfony 3
+Generic Map FormType for Symfony 3 and Sonata Project.
+
+Set latitude, longitude and any other value from Nominatim on a form using Leaflet.
+Supports the configuration of a fallback layer, base layers and overlay layers. When a pin is dragged or an address is 
+filled in, the fields are updated.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  
 
