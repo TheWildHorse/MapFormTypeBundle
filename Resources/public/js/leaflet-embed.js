@@ -631,7 +631,7 @@ CuriousMap.prototype.snapToLocation = function () {
   ) {
     // Locate device's location on the map
     this.$map.locate({
-      watch: true,
+      setView: true,
       enableHighAccuracy: true
     });
   } else {
