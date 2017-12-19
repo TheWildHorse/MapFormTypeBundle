@@ -148,7 +148,8 @@
             fields: {{ fields|json_encode|raw }},
             fallbackLayer: {{ fallback_layer|json_encode|raw }},
             baseLayers: {{ base_layers|json_encode|raw }},
-            overlays: {{ overlays|json_encode|raw }}
+            overlays: {{ overlays|json_encode|raw }},
+            geocoders: {{ geocoders|json_encode|raw }}
           }
         );
 

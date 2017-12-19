@@ -13,6 +13,9 @@ var CuriousMap = function (options) {
   this.$mapControl = L.control.layers();
   this.geoJsonLayerObjects = [];
 
+  // Init the Geocoder
+  this.geocoder = new GeoCoder(options);
+
   // Set defaults
   this.lat = options.defaults.latitude;
   this.lng = options.defaults.longitude;
@@ -20,6 +23,85 @@ var CuriousMap = function (options) {
 
   // Initialise
   this.initialise(options);
+};
+
+/**
+ * Sets the Geocoder to be used
+ *
+ * @param options
+ * @constructor
+ */
+var GeoCoder = function (options) {
+
+  // All available geocoders
+  this.geocoders = options.geocoders;
+
+  // Default geocoder to use
+  this.geocoder = this.geocoders[0];
+};
+
+/**
+ * Resolves the position to an address, using the configured geocoder
+ *
+ * @param position
+ */
+GeoCoder.prototype.resolve = function (position, callback) {
+  // return $.getJSON('https://api.data.amsterdam.nl/geosearch/search/?item=openbareruimte&lat=' + position.lat + '&lon=' + position.lng + '&radius=100');
+  // return $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json');
+  var $this = this;
+
+  this.geocoder = this.geocoders[0];
+  // Go through geocoders least- to most generic:
+  var len = this.geocoders.length - 1;
+  for (var i = len; i > 0; i--) {
+    if (
+      (position.lat > this.geocoders[i].minLat && position.lat < this.geocoders[i].maxLat) &&
+      (position.lng > this.geocoders[i].minLng && position.lng < this.geocoders[i].maxLng)
+    ) {
+      this.geocoder = this.geocoders[i];
+      break;
+    }
+  }
+
+  // Perform the geocode with the selected geocoder:
+  $.getJSON(this.geocoder.url + 'lat=' + position.lat + '&lon=' + position.lng + this.geocoder.extraArgs, function (data)
+  {
+    if (data && data.address) {
+      callback(data.address);
+    } else if (data && data.type === 'FeatureCollection' && data.features.length) {
+      // In case of Amsterdam Geosearch, do secondary lookup with the id of the road found in the first lookup:
+      $.getJSON('https://api.datapunt.amsterdam.nl/bag/nummeraanduiding/?locatie=' + position.lat + ',' + position.lng +
+      ',100&openbare_ruimte=' + data.features[0].properties.id + '&detailed=1',
+      function (data2) {
+        // The first entry is closest, by definition:
+        if (data2.results.length >= 1) {
+          var item = data2.results[0];
+          callback({
+            house_number: item.huisnummer,
+            road: item.openbare_ruimte._display,
+            postcode: item.postcode,
+            city: item.woonplaats._display,
+            district: item.buurtcombinatie.vollcode + ' - ' + item.buurtcombinatie.naam,
+            suburb: item.buurtcombinatie.vollcode + ' - ' + item.buurtcombinatie.naam,
+            neighbourhood: item.buurt.code + ' - ' + item.buurt.naam
+          });
+        } else {
+          // In case we get no house numbers (e.g. on a road through forest), only give road name:
+          callback({
+            road: data.features[0].properties.display
+          });
+        }
+      });
+    } else {
+      // Not found, use fallback GeoCoder
+      var configuredGeoCoder = $this.geocoder;
+      $this.geocoder = $this.geocoders[0];
+      // Resolve with different geocoder:
+      $this.resolve(position, callback);
+      // Restore the configured GeoCoder:
+      $this.geocoder = configuredGeoCoder;
+    }
+  });
 };
 
 /*
@@ -158,32 +240,35 @@ CuriousMap.prototype.updateFormFields = function (position) {
   $this.fields.longitude.$field.val(position.lng);
 
   // Perform reverse address lookup
-  $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
-
+  // $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json', function (data) {
+  this.geocoder.resolve(position, function (callback) {
+    var address = callback;
     // Process address information
-    if (data) {
-      if (data.address) {
-        var houseNumber = data.address.house_number || '';
-        var street = data.address.footway || data.address.road || '';
-        var postCode = data.address.postcode || '';
-        var city = data.address.city || data.address.suburb || '';
-        var district = data.address.city ? data.address.suburb || '' : data.address.district || '';
-        var neighbourhood = data.address.neighbourhood || data.address.residential || data.address.industrial || '';
-        var state = data.address.province || data.address.state || '';
-        var country = data.address.country || '';
+    if (address) {
+      console.log(address);
+      var houseNumber = address.house_number || '';
+      var street = address.footway || address.road || '';
+      var postCode = address.postcode || '';
+      var city = address.city || address.suburb || '';
+      var district = address.city ? address.suburb || '' : address.district || '';
+      var neighbourhood = address.neighbourhood || address.residential || address.industrial || '';
+      var state = address.province || address.state || '';
+      var country = address.country || '';
 
-        // Populate input fields if configured
-        if ($this.fields.address) $this.fields.address.$field.val($this.parseAddress(city, street, houseNumber));
-        if ($this.fields.street) $this.fields.street.$field.val(street);
-        if ($this.fields.postal_code) $this.fields.postal_code.$field.val(postCode);
-        if ($this.fields.city) $this.fields.city.$field.val(city);
-        if ($this.fields.city_district) $this.fields.city_district.$field.val(district);
-        if ($this.fields.city_neighbourhood) $this.fields.city_neighbourhood.$field.val(neighbourhood);
-        if ($this.fields.state) $this.fields.state.$field.val(state);
-        if ($this.fields.country) $this.fields.country.$field.val(country);
-      }
+      // Populate input fields if configured
+      if ($this.fields.address) $this.fields.address.$field.val($this.parseAddress(city, street, houseNumber));
+      if ($this.fields.street) $this.fields.street.$field.val(street);
+      if ($this.fields.postal_code) $this.fields.postal_code.$field.val(postCode);
+      if ($this.fields.city) $this.fields.city.$field.val(city);
+      if ($this.fields.city_district) $this.fields.city_district.$field.val(district);
+      if ($this.fields.city_neighbourhood) $this.fields.city_neighbourhood.$field.val(neighbourhood);
+      if ($this.fields.state) $this.fields.state.$field.val(state);
+      if ($this.fields.country) $this.fields.country.$field.val(country);
+    } else {
+      console.log('WREAH: no address in response?');
     }
   });
+
 };
 
 /**
@@ -422,9 +507,7 @@ CuriousMap.prototype.createTileLayer = function (settings) {
   return new L.TileLayer(
     settings.url,
     {
-      minNativeZoom: settings.minNativeZoom || 1,
       minZoom: settings.minZoom || 1,
-      maxNativeZoom: settings.maxNativeZoom || 18,
       maxZoom: settings.maxZoom || 20,
       attribution: settings.attribution || '',
       subdomains: settings.subdomains || 'abc'
@@ -441,9 +524,7 @@ CuriousMap.prototype.createWmsLayer = function (settings) {
     {
       layers: settings.layers.join(),
       format: settings.format || 'image/png',
-      transparent: settings.transparent || true,
-      minZoom: settings.minZoom || 1,
-      maxZoom: settings.maxZoom || 20,
+      transparent: settings.transparent || true
     }
   );
 };
@@ -452,7 +533,6 @@ CuriousMap.prototype.createWmsLayer = function (settings) {
  * Create and return a GeoJsonLayer, and register it for updating on location change
  */
 CuriousMap.prototype.createGeoJsonLayer = function (settings) {
-
   var $this = this;
 
   // Set style for circleMarkers if it has not been set
@@ -631,7 +711,7 @@ CuriousMap.prototype.snapToLocation = function () {
   ) {
     // Locate device's location on the map
     this.$map.locate({
-      setView: true,
+      watch: true,
       enableHighAccuracy: true
     });
   } else {
@@ -655,7 +735,7 @@ CuriousMap.prototype.parseAddress = function (city, street, houseNumber) {
     city = ', ' + city;
   }
 
-  if (street.length && houseNumber.length) {
+  if (street.length && houseNumber !== undefined) {
     houseNumber = ' ' + houseNumber;
   } else if (!street.length && houseNumber.length) {
     houseNumber = '';
