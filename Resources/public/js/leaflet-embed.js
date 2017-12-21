@@ -46,8 +46,6 @@ var GeoCoder = function (options) {
  * @param position
  */
 GeoCoder.prototype.resolve = function (position, callback) {
-  // return $.getJSON('https://api.data.amsterdam.nl/geosearch/search/?item=openbareruimte&lat=' + position.lat + '&lon=' + position.lng + '&radius=100');
-  // return $.getJSON('https://nominatim.openstreetmap.org/reverse?lat=' + position.lat + '&lon=' + position.lng + '&zoom=18&addressdetails=1&limit=1&format=json');
   var $this = this;
 
   this.geocoder = this.geocoders[0];
@@ -250,7 +248,6 @@ CuriousMap.prototype.updateFormFields = function (position) {
     var address = callback;
     // Process address information
     if (address) {
-      console.log(address);
       var houseNumber = address.house_number || '';
       var street = address.footway || address.road || '';
       var postCode = address.postcode || '';
@@ -270,10 +267,9 @@ CuriousMap.prototype.updateFormFields = function (position) {
       if ($this.fields.state) $this.fields.state.$field.val(state);
       if ($this.fields.country) $this.fields.country.$field.val(country);
     } else {
-      console.log('WREAH: no address in response?');
+      // We did not get a valid address from our geocoder
     }
   });
-
 };
 
 /**
