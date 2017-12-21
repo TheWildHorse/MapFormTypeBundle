@@ -512,7 +512,9 @@ CuriousMap.prototype.createTileLayer = function (settings) {
   return new L.TileLayer(
     settings.url,
     {
+      minNativeZoom: settings.minNativeZoom || 1,
       minZoom: settings.minZoom || 1,
+      maxNativeZoom: settings.maxNativeZoom || 18,
       maxZoom: settings.maxZoom || 20,
       attribution: settings.attribution || '',
       subdomains: settings.subdomains || 'abc'
@@ -529,7 +531,9 @@ CuriousMap.prototype.createWmsLayer = function (settings) {
     {
       layers: settings.layers.join(),
       format: settings.format || 'image/png',
-      transparent: settings.transparent || true
+      transparent: settings.transparent || true,
+      minZoom: settings.minZoom || 1,
+      maxZoom: settings.maxZoom || 20
     }
   );
 };
@@ -716,7 +720,7 @@ CuriousMap.prototype.snapToLocation = function () {
   ) {
     // Locate device's location on the map
     this.$map.locate({
-      watch: true,
+      setView: true,
       enableHighAccuracy: true
     });
   } else {
