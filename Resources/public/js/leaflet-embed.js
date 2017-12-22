@@ -4,6 +4,7 @@
  * @date   05/10/2017
  * @author webber <webber.nl@gmail.com>
  * @author j63 <jwoudstr@gmail.com>
+ * @author martijn <martijn@freeminded.org>
  */
 var CuriousMap = function (options) {
   // Object variables
@@ -32,7 +33,6 @@ var CuriousMap = function (options) {
  * @constructor
  */
 var GeoCoder = function (options) {
-
   // All available geocoders
   this.geocoders = options.geocoders;
 
@@ -67,29 +67,44 @@ GeoCoder.prototype.resolve = function (position, callback) {
     if (data && data.address) {
       callback(data.address);
     } else if (data && data.type === 'FeatureCollection' && data.features.length) {
-      // In case of Amsterdam Geosearch, do secondary lookup with the id of the road found in the first lookup:
-      $.getJSON('https://api.datapunt.amsterdam.nl/bag/nummeraanduiding/?locatie=' + position.lat + ',' + position.lng +
-      ',100&openbare_ruimte=' + data.features[0].properties.id + '&detailed=1',
-      function (data2) {
-        // The first entry is closest, by definition:
-        if (data2.results.length >= 1) {
-          var item = data2.results[0];
-          callback({
-            house_number: item.huisnummer,
-            road: item.openbare_ruimte._display,
-            postcode: item.postcode,
-            city: item.woonplaats._display,
-            district: item.buurtcombinatie.vollcode + ' - ' + item.buurtcombinatie.naam,
-            suburb: item.buurtcombinatie.vollcode + ' - ' + item.buurtcombinatie.naam,
-            neighbourhood: item.buurt.code + ' - ' + item.buurt.naam
-          });
-        } else {
-          // In case we get no house numbers (e.g. on a road through forest), only give road name:
-          callback({
-            road: data.features[0].properties.display
-          });
+      // In case of Amsterdam Geosearch, do secondary lookup with the id of the road found in the first lookup
+      var roadId;
+      for (var i = 0; i < data.features.length; i++) {
+        if (data.features[i].properties.opr_type === 'Weg') {
+          // We found the first object of type 'Weg'
+          roadId = data.features[i].properties.id;
+          break;
         }
-      });
+      }
+      if (roadId) {
+        $.getJSON('https://api.datapunt.amsterdam.nl/bag/nummeraanduiding/?locatie=' + position.lat + ',' + position.lng +
+          ',100&openbare_ruimte=' + roadId + '&detailed=1',
+          function(data2) {
+            // The first entry is closest, by definition:
+            if (data2.results.length >= 1) {
+              var item = data2.results[0];
+              callback({
+                house_number: item.huisnummer,
+                road: item.openbare_ruimte._display,
+                postcode: item.postcode,
+                city: item.woonplaats._display,
+                district: item.buurtcombinatie.vollcode + ' - ' + item.buurtcombinatie.naam,
+                suburb: item.buurtcombinatie.vollcode + ' - ' + item.buurtcombinatie.naam,
+                neighbourhood: item.buurt.code + ' - ' + item.buurt.naam
+              });
+            } else {
+              // In case we get no house numbers (e.g. on a road through forest), only give road name:
+              callback({
+                road: data.features[0].properties.display
+              });
+            }
+          });
+      } else {
+        // In case we do not get suitable opr_type, give information of nearest object:
+        callback({
+          road: data.features[0].properties.display
+        });
+      }
     } else {
       // Not found, use fallback GeoCoder
       var configuredGeoCoder = $this.geocoder;
