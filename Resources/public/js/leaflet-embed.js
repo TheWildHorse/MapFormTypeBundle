@@ -77,7 +77,7 @@ GeoCoder.prototype.resolve = function (position, callback) {
         }
       }
       if (roadId) {
-        $.getJSON('https://api.datapunt.amsterdam.nl/bag/nummeraanduiding/?locatie=' + position.lat + ',' + position.lng +
+        $.getJSON('https://api.data.amsterdam.nl/bag/nummeraanduiding/?locatie=' + position.lat + ',' + position.lng +
           ',100&openbare_ruimte=' + roadId + '&detailed=1',
           function(data2) {
             // The first entry is closest, by definition:
