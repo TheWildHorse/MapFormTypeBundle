@@ -1,5 +1,5 @@
 {
-    "name": "curious-inc/map-form-type-bundle",
+    "name": "igor-rinkovec/map-form-type-bundle",
     "type": "symfony-bundle",
     "description": "Generic Map FormType for Symfony 3",
     "keywords": ["symfony", "map", "maps", "form", "formtype", "bundle"],
@@ -16,9 +16,9 @@
     ],
     "require": {
         "php": "^7.1",
-        "symfony/form": "^3.0",
-        "symfony/framework-bundle": "^3.0",
-        "symfony/security-bundle": "^3.0",
+        "symfony/form": "^4.0",
+        "symfony/framework-bundle": "^4.0",
+        "symfony/security-bundle": "^4.0",
         "twig/twig": "^2.0"
     },
     "require-dev": {
